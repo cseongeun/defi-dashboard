@@ -1,0 +1,178 @@
+		[
+			{
+				"id": 1,
+				"network_id": 2,
+				"type": "SINGLE",
+				"name": "Bunny Token",
+				"symbol": "BUNNY",
+				"address": "0xC9849E6fdB743d08fAeE3E34dd2D1bc69EA11a51",
+				"icon_link": null,
+				"createdAt": "2021-06-29T16:15:18.000Z",
+				"updatedAt": "2021-06-29T16:15:19.000Z",
+				"Network": {
+					"id": 2,
+					"name": "BinanceSmartChain",
+					"subName": "Mainnet",
+					"symbol": "BNB",
+					"chainId": 56,
+					"rpcUrl": "https://bsc-dataseed.binance.org/",
+					"explorerUrl": null,
+					"createdAt": "2021-06-29T16:11:01.000Z",
+					"updatedAt": "2021-06-29T16:11:01.000Z"
+				}
+			},
+			{
+				"id": 2,
+				"network_id": 2,
+				"type": "SINGLE",
+				"name": "Wrapped BNB",
+				"symbol": "WBNB",
+				"address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+				"icon_link": null,
+				"createdAt": "2021-06-29T17:17:48.000Z",
+				"updatedAt": "2021-06-29T17:17:49.000Z",
+				"Network": {
+					"id": 2,
+					"name": "BinanceSmartChain",
+					"subName": "Mainnet",
+					"symbol": "BNB",
+					"chainId": 56,
+					"rpcUrl": "https://bsc-dataseed.binance.org/",
+					"explorerUrl": null,
+					"createdAt": "2021-06-29T16:11:01.000Z",
+					"updatedAt": "2021-06-29T16:11:01.000Z"
+				}
+			},
+			{
+				"id": 3,
+				"network_id": 2,
+				"type": "SINGLE",
+				"name": "PancakeSwap Token",
+				"symbol": "CAKE",
+				"address": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+				"icon_link": null,
+				"createdAt": "2021-06-29T17:18:45.000Z",
+				"updatedAt": "2021-06-29T17:18:46.000Z",
+				"Network": {
+					"id": 2,
+					"name": "BinanceSmartChain",
+					"subName": "Mainnet",
+					"symbol": "BNB",
+					"chainId": 56,
+					"rpcUrl": "https://bsc-dataseed.binance.org/",
+					"explorerUrl": null,
+					"createdAt": "2021-06-29T16:11:01.000Z",
+					"updatedAt": "2021-06-29T16:11:01.000Z"
+				}
+			},
+			{
+				"id": 4,
+				"network_id": 2,
+				"type": "MULTI",
+				"name": "Pancake LPs",
+				"symbol": "BUNNY-BNB LP",
+				"address": "0x5aFEf8567414F29f0f927A0F2787b188624c10E2",
+				"icon_link": null,
+				"createdAt": "2021-06-30T16:12:25.000Z",
+				"updatedAt": "2021-06-30T16:12:26.000Z",
+				"Network": {
+					"id": 2,
+					"name": "BinanceSmartChain",
+					"subName": "Mainnet",
+					"symbol": "BNB",
+					"chainId": 56,
+					"rpcUrl": "https://bsc-dataseed.binance.org/",
+					"explorerUrl": null,
+					"createdAt": "2021-06-29T16:11:01.000Z",
+					"updatedAt": "2021-06-29T16:11:01.000Z"
+				}
+			},
+			{
+				"id": 5,
+				"network_id": 1,
+				"type": "SINGLE",
+				"name": "Ethereum",
+				"symbol": "ETH",
+				"address": "0x0000000000000000000000000000000000000000",
+				"icon_link": null,
+				"createdAt": "2021-06-30T16:55:20.000Z",
+				"updatedAt": "2021-06-30T16:55:21.000Z",
+				"Network": {
+					"id": 1,
+					"name": "Ethereum",
+					"subName": "Mainnet",
+					"symbol": "ETH",
+					"chainId": 1,
+					"rpcUrl": "https://mainnet.infura.io/v3/a74ce6259ee749228b426a1ca28bfc9b",
+					"explorerUrl": null,
+					"createdAt": "2021-06-29T16:10:46.000Z",
+					"updatedAt": "2021-06-29T16:10:47.000Z"
+				}
+			},
+			{
+				"id": 6,
+				"network_id": 2,
+				"type": "SINGLE",
+				"name": "Binance Coin",
+				"symbol": "BNB",
+				"address": "0x0000000000000000000000000000000000000000",
+				"icon_link": null,
+				"createdAt": "2021-06-30T16:55:20.000Z",
+				"updatedAt": "2021-06-30T16:55:20.000Z",
+				"Network": {
+					"id": 2,
+					"name": "BinanceSmartChain",
+					"subName": "Mainnet",
+					"symbol": "BNB",
+					"chainId": 56,
+					"rpcUrl": "https://bsc-dataseed.binance.org/",
+					"explorerUrl": null,
+					"createdAt": "2021-06-29T16:11:01.000Z",
+					"updatedAt": "2021-06-29T16:11:01.000Z"
+				}
+			},
+			{
+				"id": 8,
+				"network_id": 5,
+				"type": "SINGLE",
+				"name": "EthereumClassic",
+				"symbol": "ETC",
+				"address": "0x0000000000000000000000000000000000000000",
+				"icon_link": null,
+				"createdAt": "2021-06-30T16:56:04.000Z",
+				"updatedAt": "2021-06-30T16:56:06.000Z",
+				"Network": {
+					"id": 5,
+					"name": "EthereumClassic",
+					"subName": "Mainnet",
+					"symbol": "ETC",
+					"chainId": 61,
+					"rpcUrl": "https://www.ethercluster.com/etc",
+					"explorerUrl": null,
+					"createdAt": "2021-06-30T16:46:21.000Z",
+					"updatedAt": "2021-06-30T16:46:21.000Z"
+				}
+			},
+			{
+				"id": 9,
+				"network_id": 6,
+				"type": "SINGLE",
+				"name": "Polagon",
+				"symbol": "MATIC",
+				"address": "0x0000000000000000000000000000000000000000",
+				"icon_link": null,
+				"createdAt": "2021-06-30T16:56:04.000Z",
+				"updatedAt": "2021-06-30T16:56:04.000Z",
+				"Network": {
+					"id": 6,
+					"name": "Polagon",
+					"subName": "Mainnet",
+					"symbol": "MATIC",
+					"chainId": 137,
+					"rpcUrl": "https://rpc-mainnet.maticvigil.com",
+					"explorerUrl": "https://polygonscan.com/",
+					"createdAt": "2021-06-30T16:48:33.000Z",
+					"updatedAt": "2021-06-30T16:48:33.000Z"
+				}
+			}
+		]
