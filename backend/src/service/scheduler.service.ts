@@ -1,4 +1,4 @@
-import Scheduler, { SchedulerAttributes } from '../models/Scheduler';
+import Scheduler, { SchedulerAttributes, SchedulerExtendsAttributes } from '../models/Scheduler';
 import { STATUS } from '../models/common/interface';
 import { TypeHelper } from '../helper';
 
@@ -42,6 +42,6 @@ class SchedulerService {
   }
 }
 
-export { SchedulerAttributes };
+export { SchedulerAttributes, SchedulerExtendsAttributes };
 
 export default new SchedulerService();

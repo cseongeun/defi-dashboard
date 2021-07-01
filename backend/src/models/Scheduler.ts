@@ -5,8 +5,13 @@ import { IStatus, STATUS } from './common/interface';
 export interface SchedulerAttributes {
   id: number;
   name: string;
+  cron: string;
   error: boolean;
   status: IStatus;
+}
+
+export interface SchedulerExtendsAttributes extends SchedulerAttributes {
+  instance?: any;
 }
 
 interface SchedulerCreationAttributes extends Optional<SchedulerAttributes, 'id'> {}
@@ -26,6 +31,10 @@ const Scheduler = sequelize.define<SchedulerInstance>(
     },
     name: {
       type: DataTypes.STRING(128),
+      allowNull: false,
+    },
+    cron: {
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     error: {

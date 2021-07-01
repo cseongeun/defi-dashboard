@@ -1,13 +1,15 @@
 import { ethers } from 'ethers';
 import { Provider } from '@ethersproject/providers';
+import BaseScheduler from './base.scheduler';
 import { NetworkService, NetworkAttributes, TokenService, TokenType } from '../service';
 import { aggregatorV3Abi } from '../helper/chainLink.helper';
 import { TypeHelper, DecimalsHelper } from '../helper';
 
-class TokenPriceScheduler {
+class TokenPriceScheduler extends BaseScheduler {
+  name: string = 'TOKEN_PRICE';
+
   networks: NetworkAttributes[];
   providers = new Map<number, Provider>();
-
   async init() {
     this.networks = await NetworkService.findAll();
     this.networks.forEach((network) => {
