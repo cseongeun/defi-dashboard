@@ -30,7 +30,7 @@ class TokenPriceScheduler {
     return TokenService.findAll({ type: TokenType.MULTI });
   }
 
-  async updateTokenPrice(id, price) {
+  async updateTokenPrice(id: number, price: string) {
     return TokenService.update({ id }, { price_usd: price });
   }
 
