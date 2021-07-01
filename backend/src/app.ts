@@ -1,9 +1,17 @@
-import * as express from 'express';
+import express from 'express';
 import { uniswapRoute, pancakeBunnyRoute } from './routes';
 
-const app: express.Application = express();
+class App {
+  application: express.Application;
 
-app.use('/uniswap', uniswapRoute);
-app.use('/pancakeBunny', pancakeBunnyRoute);
+  constructor() {
+    this.application = express();
+    this.use();
+  }
 
-export default app;
+  use() {
+    this.application.use('/uniswap', uniswapRoute);
+  }
+}
+
+export default new App().application;

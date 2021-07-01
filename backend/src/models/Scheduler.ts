@@ -1,4 +1,3 @@
-import { Provider } from '@ethersproject/providers';
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '.';
 import { IStatus, STATUS } from './common/interface';
@@ -6,7 +5,7 @@ import { IStatus, STATUS } from './common/interface';
 export interface SchedulerAttributes {
   id: number;
   name: string;
-  subName: string;
+  error: boolean;
   status: IStatus;
 }
 
@@ -29,9 +28,10 @@ const Scheduler = sequelize.define<SchedulerInstance>(
       type: DataTypes.STRING(128),
       allowNull: false,
     },
-    subName: {
-      type: DataTypes.STRING(128),
+    error: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
+      defaultValue: false,
     },
     status: {
       type: DataTypes.ENUM,
@@ -41,7 +41,7 @@ const Scheduler = sequelize.define<SchedulerInstance>(
     },
   },
   {
-    tableName: 'Scheduler',
+    tableName: 'scheduler',
   },
 );
 

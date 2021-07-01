@@ -5,14 +5,8 @@ import { aggregatorV3Abi } from '../helper/chainLink.helper';
 import { TypeHelper, DecimalsHelper } from '../helper';
 
 class TokenPriceScheduler {
-  property: { [key: string]: any };
-
   networks: NetworkAttributes[];
   providers = new Map<number, Provider>();
-
-  constructor() {
-    this.property.name = 'TOKEN_PRICE';
-  }
 
   async init() {
     this.networks = await NetworkService.findAll();
@@ -43,7 +37,7 @@ class TokenPriceScheduler {
         const targetProvider = this.providers.get(network_id);
         const { 1: answer } = await new ethers.Contract(price_address, aggregatorV3Abi, targetProvider).lastRoundData();
         const appliedDecimalPrice = DecimalsHelper.divideDecimals(answer.toString(), price_decimals).toString();
-
+        console.log(appliedDecimalPrice);
         await this.updateTokenPrice(id, appliedDecimalPrice);
       }),
     );

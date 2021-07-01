@@ -1,40 +1,22 @@
-import { TokenPriceScheduler } from '../schedulers';
-import { default as Scheduler } from '../models/Scheduler';
+import Scheduler, { SchedulerAttributes } from '../models/Scheduler';
 import { STATUS } from '../models/common/interface';
+import { TypeHelper } from '../helper';
 
 class SchedulerService {
-  schedulers = new Map<string, any>();
-
-  constructor() {
-    this.schedulers.set(TokenPriceScheduler.property.name, TokenPriceScheduler); // TokenPriceScheduler
-  }
-
-  init() {
-    this.schedulers.forEach((instance) => {
-      instance.init();
-    });
-  }
-
-  async update(condition: any, params: any, options: { transaction?: any } = { transaction: null }) {
-    return Scheduler.update(
-      { ...params },
-      {
-        where: {
-          ...condition,
-        },
-        transaction: options.transaction,
-      },
-    );
+  async create(params: any, transaction: any = null) {
+    return Scheduler.create(params, { transaction });
   }
 
   async findAll(
     condition?: any,
-    options: { status?: string } = {
+    options: { status?: string; transaction?: any } = {
       status: STATUS.ACTIVATE,
+      transaction: null,
     },
   ) {
     return Scheduler.findAll({
       where: { ...condition, status: options.status },
+      transaction: options.transaction,
       raw: true,
       nest: true,
     });
@@ -42,20 +24,24 @@ class SchedulerService {
 
   async findOne(
     condition?: any,
-    options: { status?: string } = {
+    options: { status?: string; transaction?: any } = {
       status: STATUS.ACTIVATE,
+      transaction: null,
     },
   ) {
     return Scheduler.findOne({
       where: { ...condition, status: options.status },
+      transaction: options.transaction,
       raw: true,
       nest: true,
     });
   }
 
-  updateSchedulerTime(id) {
-    return this.update();
+  async isExist(condition: any) {
+    return !!TypeHelper.isNull(Scheduler.findOne({ where: { ...condition } }));
   }
-
-  run() {}
 }
+
+export { SchedulerAttributes };
+
+export default new SchedulerService();
