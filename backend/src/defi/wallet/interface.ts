@@ -2,11 +2,10 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { NetworkExtendsAttributes } from '../../models/Network';
 import { TokenExtendsAttributes } from '../../models/Token';
 
-
-
-
-interface BalanceAttributes extends TokenExtendsAttributes {
+interface BalanceAttributes {
   balance: BigNumber;
 }
 
-export { NetworkExtendsAttributes, TokenExtendsAttributes, BalanceAttributes };
+interface BalanceExtendsAttributes extends BalanceAttributes, TokenExtendsAttributes {}
+
+export { NetworkExtendsAttributes, TokenExtendsAttributes, BalanceAttributes, BalanceExtendsAttributes };

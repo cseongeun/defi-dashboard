@@ -1,16 +1,7 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '.';
 import Network from './Network';
-
-interface IStatus {
-  ACTIVATE: string;
-  DEACTIVATE: string;
-}
-
-const STATUS: IStatus = {
-  ACTIVATE: 'ACTIVATE',
-  DEACTIVATE: 'DEACTIVATE',
-};
+import { IStatus, STATUS } from './common/interface';
 
 interface ProtocolAttributes {
   id: number;

@@ -1,30 +1,18 @@
 import Service from './abstract.service';
-import Token, { ITokenType, TokenType, TokenAssociations } from '../models/Token';
+import Network, { NetworkAttributes, NetworkExtendsAttributes } from '../models/Network';
 import { STATUS } from '../models/common/interface';
 import { TypeHelper } from '../helper';
 
-class TokenService extends Service {
+class NetworkService extends Service {
   includeModels: any[];
 
   constructor() {
     super();
-    this.includeModels = TokenAssociations;
+    this.includeModels = [];
   }
 
   async create(params: any, transaction: any = null) {
-    return Token.create(params, { transaction });
-  }
-
-  async update(condition: any, params: any, options: { transaction?: any } = { transaction: null }) {
-    return Token.update(
-      { ...params },
-      {
-        where: {
-          ...condition,
-        },
-        transaction: options.transaction,
-      },
-    );
+    return Network.create(params, { transaction });
   }
 
   async findAll(
@@ -35,7 +23,7 @@ class TokenService extends Service {
       transaction: null,
     },
   ) {
-    return Token.findAll({
+    return Network.findAll({
       where: { ...condition, status: options.status },
       include: options.extend ? this.includeModels : null,
       transaction: options.transaction,
@@ -52,7 +40,7 @@ class TokenService extends Service {
       transaction: null,
     },
   ) {
-    return Token.findOne({
+    return Network.findOne({
       where: { ...condition, status: options.status },
       include: options.extend ? this.includeModels : null,
       transaction: options.transaction,
@@ -61,11 +49,10 @@ class TokenService extends Service {
     });
   }
 
-  async isExist(condition?: any) {
-    return !!TypeHelper.isNull(Token.findOne({ where: { ...condition } }));
+  async isExist(condition: any) {
+    return !!TypeHelper.isNull(Network.findOne({ where: { ...condition } }));
   }
 }
 
-export { ITokenType, TokenType };
-
-export default new TokenService();
+export { NetworkAttributes, NetworkExtendsAttributes };
+export default new NetworkService();

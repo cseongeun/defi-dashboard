@@ -1,6 +1,7 @@
 import { Provider } from '@ethersproject/providers';
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '.';
+import { IStatus, STATUS } from './common/interface';
 
 export interface NetworkAttributes {
   id: number;
@@ -10,6 +11,7 @@ export interface NetworkAttributes {
   chainId: number;
   rpcUrl: string;
   explorerUrl?: string;
+  status: IStatus;
 }
 
 export interface NetworkExtendsAttributes extends NetworkAttributes {
@@ -54,6 +56,12 @@ const Network = sequelize.define<NetworkInstance>(
     explorerUrl: {
       type: DataTypes.STRING(1000),
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM,
+      values: Object.keys(STATUS),
+      allowNull: false,
+      defaultValue: STATUS.ACTIVATE,
     },
   },
   {

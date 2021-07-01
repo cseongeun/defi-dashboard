@@ -1,13 +1,14 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '.';
 import Network, { NetworkAttributes } from './Network';
+import { IStatus, STATUS } from './common/interface';
 
-interface ITokenType {
+export interface ITokenType {
   SINGLE: string;
   MULTI: string;
 }
 
-const TokenType = {
+export const TokenType: ITokenType = {
   SINGLE: 'SINGLE',
   MULTI: 'MULTI',
 };
@@ -19,7 +20,12 @@ export interface TokenAttributes {
   name: string;
   symbol: string;
   address: string;
+  decimals: number;
+  price_address: string;
+  price_decimals: number;
+  price_usd: string;
   icon_link: string;
+  status: IStatus;
 }
 
 export interface TokenExtendsAttributes extends TokenAttributes {
@@ -62,9 +68,31 @@ const Token = sequelize.define<TokenInstance>(
       type: DataTypes.STRING(500),
       allowNull: false,
     },
+    decimals: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    price_address: {
+      type: DataTypes.STRING(500),
+      allowNull: false,
+    },
+    price_decimals: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    price_usd: {
+      type: DataTypes.DECIMAL(12, 8),
+      allowNull: true,
+    },
     icon_link: {
       type: DataTypes.STRING(500),
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM,
+      values: Object.keys(STATUS),
+      allowNull: false,
+      defaultValue: STATUS.ACTIVATE,
     },
   },
   {
@@ -74,5 +102,7 @@ const Token = sequelize.define<TokenInstance>(
 );
 
 Token.belongsTo(Network, { foreignKey: 'network_id', targetKey: 'id' });
+
+export const TokenAssociations = Object.keys(Token.associations);
 
 export default Token;
