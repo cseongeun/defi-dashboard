@@ -1,7 +1,6 @@
-import Service from './abstract.service';
 import Protocol from '../models/Protocol';
 
-class ProtocolService extends Service {
+class ProtocolService {
   async create(params: any, transaction: any = null) {
     return Protocol.create(params, { transaction });
   }

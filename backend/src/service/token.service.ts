@@ -1,13 +1,11 @@
-import Service from './abstract.service';
 import Token, { ITokenType, TokenType, TokenAssociations } from '../models/Token';
 import { STATUS } from '../models/common/interface';
 import { TypeHelper } from '../helper';
 
-class TokenService extends Service {
+class TokenService {
   includeModels: any[];
 
   constructor() {
-    super();
     this.includeModels = TokenAssociations;
   }
 

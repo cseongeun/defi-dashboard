@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
-import { ZERO_ADDRESS } from '../../helper/constant.helper';
-import { TokenAbi } from '../../helper/token.helper';
+import { ConstantHelper, TokenHelper } from '../../helper';
 import { findGreaterThanZeroBalance } from '../../helper/array.helper';
 import {
   NetworkExtendsAttributes,
@@ -38,9 +37,11 @@ class Wallet {
     const targetProvider = this.networks.get(targetNetwork.id).provider;
 
     const balance =
-      contractAddress === ZERO_ADDRESS
+      contractAddress === ConstantHelper.zeroAddress()
         ? await targetProvider.getBalance(walletAddress)
-        : await new ethers.Contract(contractAddress, TokenAbi, targetProvider).balanceOf(walletAddress);
+        : await new ethers.Contract(contractAddress, TokenHelper.getTokenAbi(), targetProvider).balanceOf(
+            walletAddress,
+          );
 
     if (withInfo) {
       const targetToken = await TokenService.findOne({ network_id: targetNetwork.id, address: contractAddress });
@@ -65,9 +66,7 @@ class Wallet {
     return options.hasBalance ? findGreaterThanZeroBalance(totalBalances) : totalBalances;
   }
 
-  async getWalletPortfolio(walletAddress: string) {
-    
-  }
+  async getWalletPortfolio(walletAddress: string) {}
 }
 
 export default Wallet;

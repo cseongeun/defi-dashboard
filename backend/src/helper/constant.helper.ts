@@ -25,3 +25,5 @@ class ConstantHelper {
     };
   }
 }
+
+export default new ConstantHelper();

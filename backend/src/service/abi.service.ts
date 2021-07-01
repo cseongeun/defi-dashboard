@@ -1,7 +1,6 @@
-import Service from './abstract.service';
 import Abi from '../models/Abi';
 
-class AbiService extends Service {
+class AbiService {
   async create(params: any, transaction: any = null) {
     return Abi.create(params, { transaction });
   }

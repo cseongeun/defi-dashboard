@@ -1,13 +1,11 @@
-import Service from './abstract.service';
 import Network, { NetworkAttributes, NetworkExtendsAttributes } from '../models/Network';
 import { STATUS } from '../models/common/interface';
 import { TypeHelper } from '../helper';
 
-class NetworkService extends Service {
+class NetworkService {
   includeModels: any[];
 
   constructor() {
-    super();
     this.includeModels = [];
   }
 
