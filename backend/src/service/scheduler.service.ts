@@ -1,8 +1,14 @@
 import Scheduler, { SchedulerAttributes, SchedulerExtendsAttributes } from '../models/Scheduler';
 import { STATUS } from '../models/common/interface';
 import { TypeHelper } from '../helper';
+import Service from './service';
 
-class SchedulerService {
+const NAME = 'SchedulerService';
+
+class SchedulerService extends Service {
+  name = NAME;
+  init() {}
+
   async create(params: any, transaction: any = null) {
     return Scheduler.create(params, { transaction });
   }

@@ -12,3 +12,13 @@ export interface ITime {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface ITokenType {
+  SINGLE: string;
+  MULTI: string;
+}
+
+export const TokenType: ITokenType = {
+  SINGLE: 'SINGLE',
+  MULTI: 'MULTI',
+};

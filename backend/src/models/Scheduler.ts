@@ -7,7 +7,7 @@ export interface SchedulerAttributes {
   name: string;
   cron: string;
   error: boolean;
-  status: IStatus;
+  status: string;
 }
 
 export interface SchedulerExtendsAttributes extends SchedulerAttributes {

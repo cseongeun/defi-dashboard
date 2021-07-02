@@ -1,20 +1,32 @@
-import Network, { NetworkAssociations, NetworkAttributes, NetworkExtendsAttributes } from '../models/Network';
-import { STATUS } from '../models/common/interface';
+import MultiToken, { MultiTokenExtendsAttributes, MultiTokenAssociations } from '../models/MultiToken';
+import { STATUS } from './common.service';
 import { TypeHelper } from '../helper';
 import Service from './service';
 
-const NAME = 'NetworkService';
+const NAME = 'MultiTokenService';
 
-class NetworkService extends Service {
+class MultiTokenService extends Service {
   name = NAME;
   includeModels: any[];
 
   init() {
-    this.includeModels = NetworkAssociations;
+    this.includeModels = MultiTokenAssociations;
   }
 
   async create(params: any, transaction: any = null) {
-    return Network.create(params, { transaction });
+    return MultiToken.create(params, { transaction });
+  }
+
+  async update(condition: any, params: any, options: { transaction?: any } = { transaction: null }) {
+    return MultiToken.update(
+      { ...params },
+      {
+        where: {
+          ...condition,
+        },
+        transaction: options.transaction,
+      },
+    );
   }
 
   async findAll(
@@ -25,7 +37,7 @@ class NetworkService extends Service {
       transaction: null,
     },
   ) {
-    return Network.findAll({
+    return MultiToken.findAll({
       where: { ...condition, status: options.status },
       include: options.extend ? this.includeModels : null,
       transaction: options.transaction,
@@ -42,7 +54,7 @@ class NetworkService extends Service {
       transaction: null,
     },
   ) {
-    return Network.findOne({
+    return MultiToken.findOne({
       where: { ...condition, status: options.status },
       include: options.extend ? this.includeModels : null,
       transaction: options.transaction,
@@ -51,10 +63,10 @@ class NetworkService extends Service {
     });
   }
 
-  async isExist(condition: any) {
-    return !!TypeHelper.isNull(Network.findOne({ where: { ...condition } }));
+  async isExist(condition?: any) {
+    return !!TypeHelper.isNull(MultiToken.findOne({ where: { ...condition } }));
   }
 }
 
-export { NetworkAttributes, NetworkExtendsAttributes };
-export default new NetworkService();
+export { MultiTokenExtendsAttributes, MultiTokenAssociations };
+export default new MultiTokenService();

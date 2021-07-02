@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "modules",
   "scripts": {
-    "start": "nodemon --watch src --delay 1 --exec 'ts-node' bin/www.ts",
+    "start": "nodemon --watch src --delay 1 --exec 'ts-node' src/app.ts",
     "test": "jest"
   },
   "keywords": [],

@@ -1,5 +1,3 @@
-import Network from '../models/Network';
-
 enum STATUS {
   ACTIVATE,
   DEACTIVATE,
@@ -8,4 +6,13 @@ enum STATUS {
 test('hello', async () => {
   const res = Object.values(STATUS);
   console.log(res);
+});
+
+it('asdfasdf', () => {
+  class hello {
+    name: this;
+    getname() {
+      return this;
+    }
+  }
 });

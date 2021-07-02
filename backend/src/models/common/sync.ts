@@ -1,3 +1,4 @@
 import Scheduler from '../Scheduler';
+import MultiToken from '../MultiToken';
 
-Scheduler.sync();
+MultiToken.sync();

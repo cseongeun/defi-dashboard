@@ -1,0 +1,8 @@
+1,ethereum,mainnet,ETH,1,https://mainnet.infura.io/v3/a74ce6259ee749228b426a1ca28bfc9b,https://etherscan.io/,ACTIVATE,2021-06-29 16:10:46,2021-06-29 16:10:47
+2,binanceSmartChain,mainnet,BNB,56,https://bsc-dataseed.binance.org/,https://bscscan.com/,ACTIVATE,2021-06-29 16:11:01,2021-06-29 16:11:01
+3,ethereumClassic,mainnet,ETC,61,https://www.ethercluster.com/etc,https://blockscout.com/etc/mainnet/,ACTIVATE,2021-06-30 16:46:21,2021-06-30 16:46:21
+4,polagon,mainnet,MATIC,137,https://rpc-mainnet.maticvigil.com,https://polygonscan.com/,ACTIVATE,2021-06-30 16:48:33,2021-06-30 16:48:33
+5,xDai,mainnet,xDAI,100,https://rpc.xdaichain.com/,https://blockscout.com/xdai/mainnet/,ACTIVATE,2021-07-01 15:23:11,2021-07-01 15:23:14
+6,huobiEcoChain,mainnet,HT,128,https://http-mainnet.hecochain.com,https://scan.hecochain.com/,ACTIVATE,2021-07-01 15:24:37,2021-07-01 15:24:38
+7,avalancheNetwork,mainnet,AVAX,43114,https://api.avax.network/ext/bc/C/rpc,https://cchain.explorer.avax.network/,ACTIVATE,2021-07-01 15:25:49,2021-07-01 15:25:50
+8,fantomOpera,mainnet,FTM,250,https://rpcapi.fantom.network,https://ftmscan.com/,ACTIVATE,2021-07-01 15:26:39,2021-07-01 15:26:41

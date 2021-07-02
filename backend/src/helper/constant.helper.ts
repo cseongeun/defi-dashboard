@@ -1,28 +1,16 @@
 import { ethers } from 'ethers';
 
 class ConstantHelper {
-  zeroAddress() {
-    return ethers.constants.AddressZero;
-  }
+  zeroAddress: string;
+  zeroHash: string;
+  standardERC20Address: string;
+  standardAggregatorV3Address: string;
 
-  zeroHash() {
-    return ethers.constants.HashZero;
-  }
-
-  aggregatorV3Address() {
-    return '';
-  }
-
-  unit() {
-    return {
-      wei: 0,
-      kwei: 3,
-      mwei: 6,
-      gwei: 9,
-      szabo: 12,
-      finney: 15,
-      ether: 18,
-    };
+  constructor() {
+    this.zeroAddress = ethers.constants.AddressZero;
+    this.zeroHash = ethers.constants.HashZero;
+    this.standardERC20Address = '0xdAC17F958D2ee523a2206206994597C13D831ec7'; // usdt
+    this.standardAggregatorV3Address = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'; // chainLink eth/usd - EACAggregatorProxy
   }
 }
 

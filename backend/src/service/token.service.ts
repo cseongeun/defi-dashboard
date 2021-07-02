@@ -1,11 +1,15 @@
-import Token, { ITokenType, TokenType, TokenAssociations } from '../models/Token';
+import Service from './service';
+import Token, { TokenAssociations, TokenExtendsAttributes } from '../models/Token';
 import { STATUS } from '../models/common/interface';
 import { TypeHelper } from '../helper';
 
-class TokenService {
+const NAME = 'TokenService';
+
+class TokenService extends Service {
+  name = NAME;
   includeModels: any[];
 
-  constructor() {
+  async init() {
     this.includeModels = TokenAssociations;
   }
 
@@ -64,6 +68,6 @@ class TokenService {
   }
 }
 
-export { ITokenType, TokenType };
+export { TokenAssociations, TokenExtendsAttributes };
 
 export default new TokenService();

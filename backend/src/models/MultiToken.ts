@@ -1,35 +1,38 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '.';
 import Network, { NetworkAttributes } from './Network';
+import Token, { TokenAttributes } from './Token';
 import { IStatus, STATUS } from './common/interface';
 
-export interface TokenAttributes {
+export interface MultiTokenAttributes {
   id: number;
   network_id: number;
   name: string;
   symbol: string;
   address: string;
   decimals: number;
-  price_address: string;
-  price_decimals: number;
+  pair0_token_id: number;
+  pair1_token_id: number;
   price_usd: string;
   icon_link: string;
   status: IStatus;
 }
 
-export interface TokenExtendsAttributes extends TokenAttributes {
+export interface MultiTokenExtendsAttributes extends MultiTokenAttributes {
+  pair0?: TokenAttributes;
+  pair1?: TokenAttributes;
   Network?: NetworkAttributes;
 }
 
-interface TokenCreationAttributes extends Optional<TokenAttributes, 'id'> {}
+interface MultiTokenCreationAttributes extends Optional<MultiTokenAttributes, 'id'> {}
 
-interface TokenInstance extends Model<TokenAttributes, TokenCreationAttributes>, TokenAttributes {
+interface MultiTokenInstance extends Model<MultiTokenAttributes, MultiTokenCreationAttributes>, MultiTokenAttributes {
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-const Token = sequelize.define<TokenInstance>(
-  'Token',
+const MultiToken = sequelize.define<MultiTokenInstance>(
+  'MultiToken',
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
@@ -56,12 +59,12 @@ const Token = sequelize.define<TokenInstance>(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    price_address: {
-      type: DataTypes.STRING(500),
+    pair1_token_id: {
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
-    price_decimals: {
-      type: DataTypes.INTEGER,
+    pair0_token_id: {
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
     price_usd: {
@@ -80,13 +83,15 @@ const Token = sequelize.define<TokenInstance>(
     },
   },
   {
-    tableName: 'token',
+    tableName: 'multi_token',
     indexes: [{ fields: ['network_id', 'address'], unique: true }],
   },
 );
 
-Token.belongsTo(Network, { foreignKey: 'network_id', targetKey: 'id' });
+MultiToken.belongsTo(Network, { foreignKey: 'network_id', targetKey: 'id' });
+MultiToken.belongsTo(Token, { foreignKey: 'pair0_token_id', targetKey: 'id', as: 'pair0' });
+MultiToken.belongsTo(Token, { foreignKey: 'pair1_token_id', targetKey: 'id', as: 'pair1' });
 
-export const TokenAssociations = Object.keys(Token.associations);
+export const MultiTokenAssociations = Object.keys(MultiToken.associations);
 
-export default Token;
+export default MultiToken;

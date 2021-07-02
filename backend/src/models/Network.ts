@@ -68,5 +68,6 @@ const Network = sequelize.define<NetworkInstance>(
     tableName: 'network',
   },
 );
+export const NetworkAssociations = Object.keys(Network.associations);
 
 export default Network;
