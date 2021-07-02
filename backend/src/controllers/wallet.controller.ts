@@ -13,17 +13,11 @@ class WalletController extends Controller {
 
   private initializeRoutes() {
     console.log('wallet controller');
-    this.router.post(`${this.path}/`, this.getBalance);
+    this.router.post(`${this.path}/`, this.main);
   }
 
-  private async getBalance(req: Request, res: Response, next: NextFunction) {
-    const {
-      chainId,
-      contractAddress,
-      walletAddress,
-      withInfo,
-    }: { chainId: number; contractAddress: string; walletAddress: string; withInfo: boolean } = req.body;
-    return WalletService.getBalance(chainId, contractAddress, walletAddress, withInfo);
+  private async main(req: Request, res: Response, next: NextFunction) {
+    return res.json(true);
   }
 }
 

@@ -49,5 +49,4 @@ class SchedulerService extends Service {
 }
 
 export { SchedulerAttributes, SchedulerExtendsAttributes };
-
 export default new SchedulerService();

@@ -5,6 +5,7 @@ import NetworkService, { NetworkExtendsAttributes } from './network.service';
 import TokenService, { TokenExtendsAttributes } from './token.service';
 import MultiTokenService, { MultiTokenExtendsAttributes } from './multiToken.service';
 import { ConstantHelper, ArrayHelper } from '../helper';
+import { MultiTokenAssociations } from '../models/MultiToken';
 
 const NAME = 'WalletService';
 
@@ -39,9 +40,8 @@ class WalletService extends Service {
     });
   }
 
-  async getBalance(chainId: number | string, contractAddress: string, walletAddress: string, withInfo: boolean = true) {
-    const targetNetwork = await NetworkService.findOne({ chainId });
-    const targetProvider = this.networks.get(targetNetwork.id).provider;
+  async getBalance(networkId: number, contractAddress: string, walletAddress: string, withInfo: boolean = true) {
+    const targetProvider = this.networks.get(networkId).provider;
 
     const balance =
       contractAddress === ConstantHelper.zeroAddress
@@ -49,7 +49,7 @@ class WalletService extends Service {
         : await ERC20Service.getBalance(targetProvider, contractAddress, walletAddress);
 
     if (withInfo) {
-      const targetToken = await TokenService.findOne({ network_id: targetNetwork.id, address: contractAddress });
+      const targetToken = await TokenService.findOne({ network_id: networkId, address: contractAddress });
       return { balance, ...targetToken };
     }
 
@@ -60,10 +60,11 @@ class WalletService extends Service {
     walletAddress: string,
     options: { withInfo?: boolean; hasBalance?: boolean } = { withInfo: true, hasBalance: true },
   ) {
-    const tokens = await TokenService.findAll();
+    const [single, multi] = [Array.from(this.tokens.values()), Array.from(this.multiTokens.values())];
+    const totalTokens = [...single, ...multi];
 
     const totalBalances = await Promise.all(
-      tokens.map(async (token: TokenExtendsAttributes) => {
+      totalTokens.map(async (token: TokenExtendsAttributes) => {
         return this.getBalance(token.Network.chainId, token.address, walletAddress, options.withInfo);
       }),
     );
