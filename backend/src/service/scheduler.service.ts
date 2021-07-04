@@ -7,6 +7,7 @@ const NAME = 'SchedulerService';
 
 class SchedulerService extends Service {
   name = NAME;
+  
   init() {}
 
   async create(params: any, transaction: any = null) {

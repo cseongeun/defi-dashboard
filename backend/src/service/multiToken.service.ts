@@ -7,6 +7,7 @@ const NAME = 'MultiTokenService';
 
 class MultiTokenService extends Service {
   name = NAME;
+  
   includeModels: any[];
 
   init() {

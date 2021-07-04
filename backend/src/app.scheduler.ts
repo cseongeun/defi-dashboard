@@ -46,8 +46,6 @@ class AppScheduler {
 
 (async () => {
   const schedulers = await SchedulerService.findAll();
-
-  const appScheduler = new AppScheduler(schedulers);
-
+  const appScheduler = new AppScheduler(schedulers)
   await appScheduler.run();
 })();

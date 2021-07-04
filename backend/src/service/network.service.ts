@@ -7,6 +7,7 @@ const NAME = 'NetworkService';
 
 class NetworkService extends Service {
   name = NAME;
+  
   includeModels: any[];
 
   init() {

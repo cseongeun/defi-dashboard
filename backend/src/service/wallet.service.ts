@@ -11,8 +11,8 @@ const NAME = 'WalletService';
 
 class WalletService extends Service {
   name = NAME;
+  
   networks = new Map<number, NetworkExtendsAttributes>();
-
   tokens = new Map<number, TokenExtendsAttributes>();
   multiTokens = new Map<number, MultiTokenExtendsAttributes>();
 
@@ -64,8 +64,8 @@ class WalletService extends Service {
     const totalTokens = [...single, ...multi];
 
     const totalBalances = await Promise.all(
-      totalTokens.map(async (token: TokenExtendsAttributes) => {
-        return this.getBalance(token.Network.chainId, token.address, walletAddress, options.withInfo);
+      totalTokens.map(async (token: TokenExtendsAttributes | MultiTokenExtendsAttributes)  => {
+        return this.getBalance(token.network_id, token.address, walletAddress, options.withInfo);
       }),
     );
 

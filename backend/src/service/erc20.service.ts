@@ -8,6 +8,7 @@ const NAME = 'ERC20Service';
 
 class ERC20Service extends Service {
   name = NAME;
+  
   erc20Abi: any;
 
   async init() {

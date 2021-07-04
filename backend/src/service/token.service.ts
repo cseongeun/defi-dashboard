@@ -7,6 +7,7 @@ const NAME = 'TokenService';
 
 class TokenService extends Service {
   name = NAME;
+  
   includeModels: any[];
 
   async init() {
