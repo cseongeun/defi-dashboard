@@ -1,51 +1,60 @@
-import Scheduler, { SchedulerAttributes, SchedulerExtendsAttributes } from '../models/Scheduler';
-import { STATUS } from '../models/common/interface';
-import { TypeHelper } from '../helper';
+import Scheduler, { SchedulerAssociations, SchedulerAttributes, SchedulerExtendsAttributes } from '../model/Scheduler';
+import { STATUS } from '../model/common/interface';
+import { isNull } from '../helper/type.helper';
 import Service from './service';
 
 const NAME = 'SchedulerService';
 
 class SchedulerService extends Service {
-  name = NAME;
-  
-  init() {}
+  name = 'SchedulerService';
+  includeModels: string[] = SchedulerAssociations;
 
   async create(params: any, transaction: any = null) {
     return Scheduler.create(params, { transaction });
   }
 
+  async update(condition: any, params: any, options: { transaction?: any } = { transaction: null }) {
+    return Scheduler.update(
+      { ...params },
+      {
+        where: {
+          ...condition,
+        },
+        transaction: options.transaction,
+      },
+    );
+  }
+
   async findAll(
     condition?: any,
-    options: { status?: string; transaction?: any } = {
-      status: STATUS.ACTIVATE,
+    options: { transaction?: any } = {
       transaction: null,
     },
   ) {
-    return Scheduler.findAll({
-      where: { ...condition, status: options.status },
+    const result = await Scheduler.findAll({
+      where: { ...condition },
+      include: this.includeModels,
       transaction: options.transaction,
-      raw: true,
-      nest: true,
     });
+    return JSON.parse(JSON.stringify(result));
   }
 
   async findOne(
     condition?: any,
-    options: { status?: string; transaction?: any } = {
-      status: STATUS.ACTIVATE,
+    options: { transaction?: any } = {
       transaction: null,
     },
   ) {
-    return Scheduler.findOne({
-      where: { ...condition, status: options.status },
+    const result = await Scheduler.findOne({
+      where: { ...condition },
+      include: this.includeModels,
       transaction: options.transaction,
-      raw: true,
-      nest: true,
     });
+    return JSON.parse(JSON.stringify(result));
   }
 
   async isExist(condition: any) {
-    return !!TypeHelper.isNull(Scheduler.findOne({ where: { ...condition } }));
+    return !!isNull(Scheduler.findOne({ where: { ...condition } }));
   }
 }
 

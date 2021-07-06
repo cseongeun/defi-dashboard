@@ -1,6 +1,5 @@
 import express from 'express';
-import { Services } from './service';
-import { Controllers } from './controllers';
+import { Controllers } from './controller';
 
 class App {
   port: number;
@@ -15,18 +14,6 @@ class App {
     this.application
       .listen(this.port, () => console.log(`api server listening at ${this.port}`))
       .on('error', (err) => console.error(err));
-  }
-
-  initService() {
-    Services.forEach(async (service) => {
-      try {
-        console.log(`${service.name} instance initialized`);
-        await service.init();
-      } catch (e) {
-        console.log(`${service.name} instance initialize failed`);
-        throw Error(e);
-      }
-    });
   }
 
   initController() {
@@ -45,7 +32,6 @@ class App {
 (async () => {
   const app = new App();
 
-  await app.initService();
   app.initController();
   app.run();
 })();

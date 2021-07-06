@@ -1,14 +1,14 @@
-import Network, { NetworkAssociations, NetworkAttributes, NetworkExtendsAttributes } from '../model/Network';
+import Protocol, { ProtocolAssociations, ProtocolAttributes } from '../model/Protocol';
 import { STATUS } from '../model/common/interface';
 import { isNull } from '../helper/type.helper';
 import Service from './service';
 
-class NetworkService extends Service {
-  name = 'NetworkService';
-  includeModels: string[] = NetworkAssociations;
+class ProtocolService extends Service {
+  name = 'ProtocolService';
+  includeModels: string[] = ProtocolAssociations;
 
   async create(params: any, transaction: any = null) {
-    return Network.create(params, { transaction });
+    return Protocol.create(params, { transaction });
   }
 
   async findAll(
@@ -17,7 +17,7 @@ class NetworkService extends Service {
       transaction: null,
     },
   ) {
-    const result = await Network.findAll({
+    const result = await Protocol.findAll({
       where: { ...condition },
       include: this.includeModels,
       transaction: options.transaction,
@@ -31,7 +31,7 @@ class NetworkService extends Service {
       transaction: null,
     },
   ) {
-    const result = await Network.findOne({
+    const result = await Protocol.findOne({
       where: { ...condition },
       include: this.includeModels,
       transaction: options.transaction,
@@ -40,9 +40,9 @@ class NetworkService extends Service {
   }
 
   async isExist(condition: any) {
-    return !!isNull(Network.findOne({ where: { ...condition } }));
+    return !!isNull(Protocol.findOne({ where: { ...condition } }));
   }
 }
 
-export { NetworkAttributes, NetworkExtendsAttributes };
-export default new NetworkService();
+export { ProtocolAttributes };
+export default new ProtocolService();

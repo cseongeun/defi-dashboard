@@ -2,30 +2,26 @@ import BigNumber from 'bignumber.js';
 
 type argumentType = string | number | BigNumber;
 
-class BigNumberHelper {
-  toBigNumber(value: string | number) {
-    return new BigNumber(value);
-  }
+export const toBigNumber = (value: argumentType) => {
+  return new BigNumber(value);
+};
 
-  shift(value: argumentType, n: number) {
-    return new BigNumber(value).shiftedBy(n);
-  }
+export const shift = (value: argumentType, n: number) => {
+  return new BigNumber(value).shiftedBy(n);
+};
 
-  add(a: argumentType, b: argumentType) {
-    return new BigNumber(a).plus(b);
-  }
+export const add = (a: argumentType, b: argumentType) => {
+  return new BigNumber(a).plus(b);
+};
 
-  sub(a: argumentType, b: argumentType) {
-    return new BigNumber(a).minus(b);
-  }
+export const sub = (a: argumentType, b: argumentType) => {
+  return new BigNumber(a).minus(b);
+};
 
-  mul(a: argumentType, b: argumentType) {
-    return new BigNumber(a).multipliedBy(b);
-  }
+export const mul = (a: argumentType, b: argumentType) => {
+  return new BigNumber(a).multipliedBy(b);
+};
 
-  div(a: argumentType, b: argumentType) {
-    return new BigNumber(a).div(b);
-  }
-}
-
-export default new BigNumberHelper();
+export const div = (a: argumentType, b: argumentType) => {
+  return new BigNumber(a).div(b);
+};

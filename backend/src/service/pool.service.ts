@@ -1,18 +1,17 @@
-import Service from './service';
-import Token, { TokenType, TokenAssociations, TokenExtendsAttributes } from '../model/Token';
-import { STATUS } from '../model/common/interface';
+import Pool, { PoolAssociations, PoolAttributes } from '../model/Pool';
 import { isNull } from '../helper/type.helper';
+import Service from './service';
 
-class TokenService extends Service {
-  name = 'TokenService';
-  includeModels: string[] = TokenAssociations;
+class PoolService extends Service {
+  name = 'PoolService';
+  includeModels: string[] = PoolAssociations;
 
   async create(params: any, transaction: any = null) {
-    return Token.create(params, { transaction });
+    return Pool.create(params, { transaction });
   }
 
   async update(condition: any, params: any, options: { transaction?: any } = { transaction: null }) {
-    return Token.update(
+    return Pool.update(
       { ...params },
       {
         where: {
@@ -29,7 +28,7 @@ class TokenService extends Service {
       transaction: null,
     },
   ) {
-    const result = await Token.findAll({
+    const result = await Pool.findAll({
       where: { ...condition },
       include: this.includeModels,
       transaction: options.transaction,
@@ -43,7 +42,7 @@ class TokenService extends Service {
       transaction: null,
     },
   ) {
-    const result = await Token.findOne({
+    const result = await Pool.findOne({
       where: { ...condition },
       include: this.includeModels,
       transaction: options.transaction,
@@ -51,11 +50,10 @@ class TokenService extends Service {
     return JSON.parse(JSON.stringify(result));
   }
 
-  async isExist(condition?: any) {
-    return !!isNull(Token.findOne({ where: { ...condition } }));
+  async isExist(condition: any) {
+    return !!isNull(Pool.findOne({ where: { ...condition } }));
   }
 }
 
-export { TokenType, TokenAssociations, TokenExtendsAttributes };
-
-export default new TokenService();
+export { PoolAttributes };
+export default new PoolService();

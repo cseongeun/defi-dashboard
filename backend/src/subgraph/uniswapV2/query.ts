@@ -1,6 +1,4 @@
-import { gql } from '@apollo/client';
-
-export const UniswapV2ETHPriceQuery = gql`
+export const UniswapV2ETHPriceQuery = `
   query ethPrice {
     bundle(id: "1") {
       ethPrice
@@ -8,7 +6,7 @@ export const UniswapV2ETHPriceQuery = gql`
   }
 `;
 
-export const UniswapV2UserQuery = gql`
+export const UniswapV2UserQuery = `
   query userInfo($userAddress: String) {
     user(id: $userAddress) {
       liquidityPositions {
@@ -44,7 +42,7 @@ export const UniswapV2UserQuery = gql`
   }
 `;
 
-export const UniswapV2TokenPriceQuery = gql`
+export const UniswapV2TokenPriceQuery = `
   query tokenPrice($tokenAddress: String) {
     token(id: $tokenAddress) {
       derivedETH
@@ -52,7 +50,7 @@ export const UniswapV2TokenPriceQuery = gql`
   }
 `;
 
-export const UniswapV2PairQuery = gql`
+export const UniswapV2PairQuery = `
   query pair($pairAddress: String) {
     pair(id: $pairAddress) {
       token0 {

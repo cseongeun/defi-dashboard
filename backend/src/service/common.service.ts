@@ -1,1 +1,1 @@
-export { IStatus, STATUS, ITime, ITokenType, TokenType } from '../models/common/interface';
+export { IStatus, STATUS, ITime, ITokenType, TokenType } from '../model/common/interface';

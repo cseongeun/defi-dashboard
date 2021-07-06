@@ -1,69 +1,50 @@
-import fetch from 'cross-fetch';
-import { HttpLink, InMemoryCache, ApolloClient } from '@apollo/client';
 import { UniswapV2ETHPriceQuery, UniswapV2PairQuery, UniswapV2TokenPriceQuery, UniswapV2UserQuery } from './query';
+import axios from 'axios';
 
 class UniswapV2Subgraph {
-  client: any;
+  url: any;
 
   constructor() {
-    this.client = new ApolloClient({
-      link: new HttpLink({ uri: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2', fetch }),
-      cache: new InMemoryCache(),
-      queryDeduplication: true,
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'no-cache',
-        },
-        query: {
-          fetchPolicy: 'no-cache',
-          errorPolicy: 'all',
-        },
-      },
-    });
-  }
-
-  async query(params: any) {
-    return this.client.query(params);
+    this.url = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2';
   }
 
   async getEtherPriceInUSD() {
-    const result = await this.query({
-      query: UniswapV2ETHPriceQuery,
-    });
-    return result?.data?.bundle?.ethPrice;
+    const result = await axios.post(this.url, { query: UniswapV2ETHPriceQuery });
+    return result?.data?.data?.bundle?.ethPrice;
   }
 
   async getLiquidityPositions(userAddress: string) {
-    const result = await this.query({
+    const result = await axios.post(this.url, {
       query: UniswapV2UserQuery,
       variables: {
-        userAddress,
+        userAddress: userAddress.toLowerCase(),
       },
     });
-    return result?.data?.user?.liquidityPositions;
+
+    return result?.data?.data?.user?.liquidityPositions;
   }
 
   async getTokenPrice(tokenAddress: string) {
-    const result = await this.query({
+    const result = await axios.post(this.url, {
       query: UniswapV2TokenPriceQuery,
       variables: {
         tokenAddress: tokenAddress.toLowerCase(),
       },
     });
-    return result?.data?.token?.derivedETH;
+
+    return result?.data?.data?.token?.derivedETH;
   }
 
   async getPair(pairAddress: string) {
-    const result = await this.query({
+    const result = await axios.post(this.url, {
       query: UniswapV2PairQuery,
       variables: {
         pairAddress: pairAddress.toLowerCase(),
       },
     });
-    return result?.data?.pair;
+
+    return result?.data?.data?.pair;
   }
 }
 
-const uniswapV2Subgraph = new UniswapV2Subgraph();
-
-export default uniswapV2Subgraph;
+export default new UniswapV2Subgraph();
