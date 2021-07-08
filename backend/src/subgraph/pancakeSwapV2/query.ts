@@ -16,3 +16,34 @@ export const PancakeSwapV2PairQuery = `
     }
   }
 `;
+
+export const PancakeSwapV2SmartChefFactoryQuery = `
+  query smartChefFactory($smartChefAddress: String) {
+    factory(id: $smartChefAddress) {
+      totalSmartChef
+    }
+  }
+`;
+
+export const PancakeSwapV2SmartChefQuery = `
+  query smartChefs($limit: Int!) {
+    smartChefs(first: $limit) {
+      id
+      stakeToken {
+        id
+        name
+        symbol
+        decimals
+      }
+      earnToken {
+        id
+        name
+        symbol
+        decimals
+      }
+      reward
+      startBlock
+      endBlock
+    }
+  }
+`;

@@ -93,7 +93,7 @@ const Token = sequelize.define<TokenInstance>(
       allowNull: true,
     },
     price_usd: {
-      type: DataTypes.DECIMAL(12, 8),
+      type: DataTypes.DECIMAL(33, 20),
       allowNull: true,
     },
     icon_link: {

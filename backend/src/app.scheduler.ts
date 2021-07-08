@@ -2,6 +2,11 @@ import schedule from 'node-schedule';
 import SchedulerInstances from './scheduler';
 import { SchedulerService, SchedulerAttributes, STATUS } from './service';
 
+const COMMON_ERROR_REASON_CHECKER = (err: string) => {
+  const reasons = ['missing response'];
+  return reasons.includes(err);
+};
+
 class AppScheduler {
   schedulers: SchedulerAttributes[];
   schedulerInstanceById = new Map<number, any>();
@@ -31,15 +36,15 @@ class AppScheduler {
   async execute(id: number) {
     try {
       const status = await this.checkStatus(id);
-      console.log(status);
       if (status) {
         const targetSchedulerInstance = this.schedulerInstanceById.get(id);
         await targetSchedulerInstance.run();
         await this.updateScheduler(id, false, null, STATUS.ACTIVATE);
       }
     } catch (e) {
-      console.log(e);
-      await this.updateScheduler(id, true, JSON.stringify(e.message), STATUS.DEACTIVATE);
+      if (!COMMON_ERROR_REASON_CHECKER(e.reason)) {
+        await this.updateScheduler(id, true, JSON.stringify(e.reason), STATUS.DEACTIVATE);
+      }
     }
   }
 

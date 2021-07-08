@@ -1,5 +1,5 @@
 export { default as ContractService } from './contract.service';
-export { default as PoolService } from './pool.service';
+export { default as PoolService, PoolExtendsAttributes } from './pool.service';
 export { default as TokenService, TokenType, TokenAssociations, TokenExtendsAttributes } from './token.service';
 export { default as NetworkService, NetworkAttributes, NetworkExtendsAttributes } from './network.service';
 export { default as ProtocolService } from './protocol.service';

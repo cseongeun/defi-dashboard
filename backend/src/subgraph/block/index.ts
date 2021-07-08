@@ -1,58 +1,28 @@
-import fetch from 'cross-fetch';
-import { HttpLink, InMemoryCache, ApolloClient } from '@apollo/client';
-
+import axios from 'axios';
 import { BlockNumberQuery } from './query';
+
 class BlockSubgraph {
-  etherClient: any;
-  bscClient: any;
+  ethereumUrl: string;
+  binanceSmartChainUr;
 
   constructor() {
-    this.etherClient = new ApolloClient({
-      link: new HttpLink({ uri: 'https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks', fetch }),
-      cache: new InMemoryCache(),
-      queryDeduplication: true,
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'network-only',
-        },
-        query: {
-          fetchPolicy: 'network-only',
-          errorPolicy: 'all',
-        },
-      },
-    });
-
-    this.bscClient = new ApolloClient({
-      link: new HttpLink({ uri: 'https://api.thegraph.com/subgraphs/name/pancakeswap/blocks', fetch }),
-      cache: new InMemoryCache(),
-      queryDeduplication: true,
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'network-only',
-        },
-        query: {
-          fetchPolicy: 'network-only',
-          errorPolicy: 'all',
-        },
-      },
-    });
+    this.ethereumUrl = 'https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks';
+    this.binanceSmartChainUr = 'https://api.thegraph.com/subgraphs/name/pancakeswap/blocks';
   }
 
   async getETHBlockNumber() {
-    const result = await this.etherClient.query({
+    const result = await axios.post(this.ethereumUrl, {
       query: BlockNumberQuery,
     });
-    return result?.data?.blocks?.[0]?.number;
+    return result?.data?.data?.blocks?.[0]?.number;
   }
 
   async getBSCBlockNumber() {
-    const result = await this.bscClient.query({
+    const result = await axios.post(this.binanceSmartChainUr, {
       query: BlockNumberQuery,
     });
-    return result?.data?.blocks?.[0]?.number;
+    return result?.data?.data?.blocks?.[0]?.number;
   }
 }
 
-const blockSubgraph = new BlockSubgraph();
-
-export default blockSubgraph;
+export default new BlockSubgraph();

@@ -1,4 +1,4 @@
-import Pool, { PoolAssociations, PoolAttributes } from '../model/Pool';
+import Pool, { PoolAssociations, PoolAttributes, PoolExtendsAttributes } from '../model/Pool';
 import { isNull } from '../helper/type.helper';
 import Service from './service';
 
@@ -50,10 +50,12 @@ class PoolService extends Service {
     return JSON.parse(JSON.stringify(result));
   }
 
+  async findCreateFind() {}
+
   async isExist(condition: any) {
     return !!isNull(Pool.findOne({ where: { ...condition } }));
   }
 }
 
-export { PoolAttributes };
+export { PoolAttributes, PoolExtendsAttributes };
 export default new PoolService();

@@ -16,7 +16,7 @@ class Wallet {
     });
 
     networks.forEach((network: NetworkExtendsAttributes) => {
-      const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl);
+      const provider = new ethers.providers.JsonRpcProvider(network.rpc_url);
       this.networks.set(network.id, {
         ...network,
         provider,

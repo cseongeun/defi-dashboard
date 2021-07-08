@@ -17,6 +17,17 @@ export const fillSequenceNumber = (number: number) => {
   return Array.from(Array(number).keys());
 };
 
-export const toChunkSplit = (array: any[], size: number) => {
-  return _.chunk(array, size);
+export const toSplitWithChunkSize = (array: any[], chunkSize: number) => {
+  return _.chunk(array, chunkSize);
+};
+
+export const toSplitWithReturnSize = (array: any[], returnSize: number) => {
+  let len = array.length;
+  let chunkSize = len / returnSize;
+  let temp = [];
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = array.slice(i, i + chunkSize);
+    temp.push(chunk);
+  }
+  return temp;
 };

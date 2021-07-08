@@ -1,6 +1,5 @@
 import Service from './service';
 import Token, { TokenType, TokenAssociations, TokenExtendsAttributes } from '../model/Token';
-import { STATUS } from '../model/common/interface';
 import { isNull } from '../helper/type.helper';
 
 class TokenService extends Service {

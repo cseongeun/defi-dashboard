@@ -1,4 +1,4 @@
-import { shift } from './bignumber.helper';
+import { shift, toBigNumber } from './bignumber.helper';
 
 export const multiplyDecimals = (value: string | number, decimals: number) => {
   return shift(value, decimals);

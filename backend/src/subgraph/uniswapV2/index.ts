@@ -1,5 +1,5 @@
-import { UniswapV2ETHPriceQuery, UniswapV2PairQuery, UniswapV2TokenPriceQuery, UniswapV2UserQuery } from './query';
 import axios from 'axios';
+import { UniswapV2ETHPriceQuery, UniswapV2PairQuery, UniswapV2TokenPriceQuery, UniswapV2UserQuery } from './query';
 
 class UniswapV2Subgraph {
   url: any;

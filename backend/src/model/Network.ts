@@ -6,11 +6,12 @@ import { IStatus, STATUS } from './common/interface';
 interface NetworkAttributes {
   id: number;
   name: string;
-  subName: string;
+  sub_name: string;
   symbol: string;
-  chainId: number;
-  rpcUrl: string;
-  explorerUrl?: string;
+  chain_id: number;
+  rpc_url: string;
+  block_time_sec?: number;
+  explorer_url?: string;
   status: IStatus;
 }
 
@@ -37,7 +38,7 @@ const Network = sequelize.define<NetworkInstance>(
       type: DataTypes.STRING(128),
       allowNull: false,
     },
-    subName: {
+    sub_name: {
       type: DataTypes.STRING(128),
       allowNull: false,
     },
@@ -45,15 +46,19 @@ const Network = sequelize.define<NetworkInstance>(
       type: DataTypes.STRING(128),
       allowNull: false,
     },
-    chainId: {
+    chain_id: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
     },
-    rpcUrl: {
+    block_time_sec: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: true,
+    },
+    rpc_url: {
       type: DataTypes.STRING(1000),
       allowNull: false,
     },
-    explorerUrl: {
+    explorer_url: {
       type: DataTypes.STRING(1000),
       allowNull: true,
     },
