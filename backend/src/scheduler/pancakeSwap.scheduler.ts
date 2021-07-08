@@ -251,11 +251,11 @@ class PancakeSwapScheduler extends Scheduler {
     },
     transaction: any = null,
   ) {
+    console.log(poolInfo);
     const [findStakeToken, findRewardToken] = await Promise.all([
       this.getRegisteredToken(poolInfo.stakeToken.id, transaction),
       this.getRegisteredToken(poolInfo.rewardToken.id, transaction),
     ]);
-
     if (isNull(findStakeToken)) {
       await this.registerToken(
         {
@@ -280,12 +280,13 @@ class PancakeSwapScheduler extends Scheduler {
         transaction,
       );
     }
+    console.log('here');
 
     const [registeredStakeToken, registeredRewardToken] = await Promise.all([
       this.getRegisteredToken(poolInfo.stakeToken.id, transaction),
       this.getRegisteredToken(poolInfo.rewardToken.id, transaction),
     ]);
-
+    console.log(registeredStakeToken, 'registeredStakeToken');
     await this.registerPool(
       {
         type: PancakeSwap.constants.poolType.smartChef,
@@ -397,6 +398,7 @@ class PancakeSwapScheduler extends Scheduler {
               }
 
               if (isNull(pool)) {
+                if (isGreaterThanOrEqual(curBlockNumber, endBlock)) return;
                 await this.initSmartChefPool(
                   {
                     address: id,
@@ -460,6 +462,7 @@ class PancakeSwapScheduler extends Scheduler {
 
           await transaction.commit();
         } catch (e) {
+          console.log(e);
           await transaction.rollback();
           throw new Error(e);
         }
@@ -471,7 +474,7 @@ class PancakeSwapScheduler extends Scheduler {
   }
 
   async run() {
-    await Promise.all([this.masterChefPools(), this.smartChefPools()]);
+    await Promise.all([this.smartChefPools()]);
   }
 }
 
