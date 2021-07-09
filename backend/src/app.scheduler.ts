@@ -18,8 +18,14 @@ class AppScheduler {
       const instance = SchedulerInstances.find((instance) => instance.name === scheduler.name);
       if (isNull(instance)) {
         console.log(`Not found scheduler instance ${scheduler.name}`);
+        // this.updateScheduler(this.schedulers.id, true, 'Not matched any instance name', STATUS.DEACTIVATE)
+        // this.schedulers.pop;
       }
-      this.schedulerInstanceById.set(scheduler.id, instance);
+
+      if (isNull(instance)) {
+      } else {
+        this.schedulerInstanceById.set(scheduler.id, instance);
+      }
     });
   }
 

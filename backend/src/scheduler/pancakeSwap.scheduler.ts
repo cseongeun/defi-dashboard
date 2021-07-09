@@ -3,6 +3,15 @@ import { sequelize } from '../model';
 import { PancakeSwap } from '../defi/pancakeSwap';
 import { TokenService, PoolService, TokenType, STATUS } from '../service';
 import { isNull } from '../helper/type.helper';
+import {
+  getRegisteredPool,
+  getRegisteredToken,
+  updatePool,
+  updateToken,
+  registerPool,
+  registerToken,
+  deactivatePool,
+} from './common';
 import { fillSequenceNumber, toSplitWithReturnSize } from '../helper/array.helper';
 import { getTokenBalance, getTokenName, getTokenProperty } from '../helper/erc20.helper';
 import { isZero, toFixed, div, mul, isGreaterThanOrEqual } from '../helper/bignumber.helper';
@@ -11,87 +20,9 @@ import { divideDecimals } from '../helper/decimals.helper';
 
 class PancakeSwapScheduler extends Scheduler {
   name: string = 'PancakeSwapScheduler';
-  cake: any;
 
   async init() {
     await PancakeSwap.init();
-    this.cake = await this.getRegisteredToken(PancakeSwap.constants.cakeTokenAddress);
-  }
-
-  async getRegisteredMasterChefPool(pid: number, transaction: any = null) {
-    return PoolService.findOne({ protocol_id: PancakeSwap.protocol.id, pid }, { transaction });
-  }
-
-  async getRegisteredSmartChefPool(address: string, transaction: any = null) {
-    return PoolService.findOne({ protocol_id: PancakeSwap.protocol.id, address }, { transaction });
-  }
-
-  async getRegisteredToken(address: string, transaction: any = null) {
-    return TokenService.findOne({ network_id: PancakeSwap.network.id, address }, { transaction });
-  }
-
-  async registerPool(
-    params: {
-      name: string;
-      type: string;
-      address?: string;
-      pid?: number;
-      stake_token_id: number;
-      reward_token_id: number;
-    },
-    transaction: any = null,
-  ) {
-    return PoolService.create(
-      {
-        protocol_id: PancakeSwap.protocol.id,
-        status: STATUS.ACTIVATE,
-        ...params,
-      },
-      transaction,
-    );
-  }
-
-  async registerToken(
-    params: {
-      type: string;
-      name: string;
-      symbol: string;
-      address: string;
-      decimals: number;
-      pair0_token_id?: number;
-      pair1_token_id?: number;
-    },
-    transaction: any = null,
-  ) {
-    return TokenService.create({ network_id: PancakeSwap.network.id, status: STATUS.ACTIVATE, ...params }, transaction);
-  }
-
-  async updateMasterChefPool(
-    pid: number,
-    params: {
-      liquidity_amount: string | null;
-      liquidity_usd: string | null;
-      apy: string | null;
-      apr: string | null;
-      status: string;
-    },
-    transaction: any = null,
-  ) {
-    return PoolService.update({ protocol_id: PancakeSwap.protocol.id, pid }, { ...params }, { transaction });
-  }
-
-  async updateSmartChefPool(
-    address: string,
-    params: {
-      liquidity_amount: string | null;
-      liquidity_usd: string | null;
-      apy: string | null;
-      apr: string | null;
-      status: string;
-    },
-    transaction: any = null,
-  ) {
-    return PoolService.update({ protocol_id: PancakeSwap.protocol.id, address }, { ...params }, { transaction });
   }
 
   async getMasterChefState() {
@@ -102,7 +33,7 @@ class PancakeSwapScheduler extends Scheduler {
     ]);
 
     // 블록 당 리워드 갯수
-    const rewardsInOneBlock = divideDecimals(rewardPerBlock.toString(), this.cake.decimals);
+    const rewardsInOneBlock = divideDecimals(rewardPerBlock.toString(), PancakeSwap.cakeToken.decimals);
     // 하루 총 생성 블록 갯수
     const blocksInOneDay = div(oneDaySeconds, PancakeSwap.network.block_time_sec);
     // 일년 총 생성 블록 갯수
@@ -112,7 +43,7 @@ class PancakeSwapScheduler extends Scheduler {
     // 일년 총 리워드 갯수
     const totalRewardInOneYear = mul(totalRewardInOneDay, oneYearDays);
     // 하루 총 리워드 USD 가격
-    const totalRewardPriceInOneDay = mul(totalRewardInOneDay, this.cake.price_usd);
+    const totalRewardPriceInOneDay = mul(totalRewardInOneDay, PancakeSwap.cakeToken.price_usd);
     // 일년 총 리워드 USD 가격
     const totalRewardPriceInOneYear = mul(totalRewardPriceInOneDay, oneYearDays);
 
@@ -124,47 +55,22 @@ class PancakeSwapScheduler extends Scheduler {
     };
   }
 
-  async deactivateMasterChefPool(pid: number, transaction: any = null) {
-    return this.updateMasterChefPool(
-      pid,
-      {
-        liquidity_amount: null,
-        liquidity_usd: null,
-        apr: null,
-        apy: null,
-        status: STATUS.DEACTIVATE,
-      },
-      transaction,
-    );
-  }
-
-  async deactivateSmartChefPool(address: string, transaction: any = null) {
-    return this.updateSmartChefPool(
-      address,
-      {
-        liquidity_amount: null,
-        liquidity_usd: null,
-        apr: null,
-        apy: null,
-        status: STATUS.DEACTIVATE,
-      },
-      transaction,
-    );
-  }
-
   async initMasterChefPool(poolInfo: { pid: number; lpToken: string; allocPoint: number }, transaction: any = null) {
     const tokenPair = await PancakeSwap.getPair(poolInfo.lpToken);
-    const registeredToken = await this.getRegisteredToken(poolInfo.lpToken, transaction);
+    const registeredToken = await getRegisteredToken(
+      { network_id: PancakeSwap.network.id, address: poolInfo.lpToken },
+      transaction,
+    );
+
     const { name, symbol, decimals } = await getTokenProperty(PancakeSwap.provider, poolInfo.lpToken);
 
     /* Multi 타입이 아닐 경우 */
     if (isNull(tokenPair)) {
       /* Check V1 Pair pass */
-      const lpTokenName = await getTokenName(PancakeSwap.provider, poolInfo.lpToken);
-
       if (isNull(registeredToken)) {
-        await this.registerToken(
+        await registerToken(
           {
+            network_id: PancakeSwap.network.id,
             type: TokenType.SINGLE,
             name,
             symbol,
@@ -181,13 +87,14 @@ class PancakeSwapScheduler extends Scheduler {
       } = tokenPair;
 
       const [registeredToken0, registeredToken1] = await Promise.all([
-        this.getRegisteredToken(token0Address, transaction),
-        this.getRegisteredToken(token1Address, transaction),
+        getRegisteredToken({ network_id: PancakeSwap.network.id, address: token0Address }, transaction),
+        getRegisteredToken({ network_id: PancakeSwap.network.id, address: token1Address }, transaction),
       ]);
 
       if (isNull(registeredToken0)) {
-        await this.registerToken(
+        await registerToken(
           {
+            network_id: PancakeSwap.network.id,
             type: TokenType.SINGLE,
             address: token0Address,
             name: token0Name,
@@ -198,8 +105,9 @@ class PancakeSwapScheduler extends Scheduler {
         );
       }
       if (isNull(registeredToken1)) {
-        await this.registerToken(
+        await registerToken(
           {
+            network_id: PancakeSwap.network.id,
             type: TokenType.SINGLE,
             address: token1Address,
             name: token1Name,
@@ -211,11 +119,12 @@ class PancakeSwapScheduler extends Scheduler {
       }
       if (isNull(registeredToken)) {
         const [pairOfToken0, pairOfToken1] = await Promise.all([
-          this.getRegisteredToken(token0Address, transaction),
-          this.getRegisteredToken(token1Address, transaction),
+          getRegisteredToken({ network_id: PancakeSwap.network.id, address: token0Address }, transaction),
+          getRegisteredToken({ network_id: PancakeSwap.network.id, address: token1Address }, transaction),
         ]);
-        await this.registerToken(
+        await registerToken(
           {
+            network_id: PancakeSwap.network.id,
             type: TokenType.MULTI,
             address: poolInfo.lpToken,
             name,
@@ -229,14 +138,18 @@ class PancakeSwapScheduler extends Scheduler {
       }
     }
     /* 풀 추가 */
-    const stakeToken = await this.getRegisteredToken(poolInfo.lpToken, transaction);
-    await this.registerPool(
+    const stakeToken = await getRegisteredToken(
+      { network_id: PancakeSwap.network.id, address: poolInfo.lpToken },
+      transaction,
+    );
+    await registerPool(
       {
+        protocol_id: PancakeSwap.protocol.id,
         type: PancakeSwap.constants.poolType.masterChef,
-        name: `${stakeToken.symbol}/${this.cake.symbol}`,
+        name: `${stakeToken.symbol}/${PancakeSwap.cakeToken.symbol}`,
         pid: poolInfo.pid,
         stake_token_id: stakeToken.id,
-        reward_token_id: this.cake.id,
+        reward_token_id: PancakeSwap.cakeToken.id,
       },
       transaction,
     );
@@ -251,15 +164,16 @@ class PancakeSwapScheduler extends Scheduler {
     transaction: any = null,
   ) {
     const [findStakeToken, findRewardToken, stakeTokenPair, rewardTokenPair] = await Promise.all([
-      this.getRegisteredToken(poolInfo.stakeToken.id, transaction),
-      this.getRegisteredToken(poolInfo.rewardToken.id, transaction),
+      getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.stakeToken.id }, transaction),
+      getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.rewardToken.id }, transaction),
       PancakeSwap.getPair(poolInfo.stakeToken.id),
       PancakeSwap.getPair(poolInfo.rewardToken.id),
     ]);
 
     if (isNull(findStakeToken)) {
-      await this.registerToken(
+      await registerToken(
         {
+          network_id: PancakeSwap.network.id,
           type: TokenType.SINGLE,
           name: poolInfo.stakeToken.name,
           symbol: poolInfo.stakeToken.symbol,
@@ -270,8 +184,9 @@ class PancakeSwapScheduler extends Scheduler {
       );
     }
     if (isNull(findRewardToken)) {
-      await this.registerToken(
+      await registerToken(
         {
+          network_id: PancakeSwap.network.id,
           type: TokenType.SINGLE,
           name: poolInfo.rewardToken.name,
           symbol: poolInfo.rewardToken.symbol,
@@ -283,11 +198,13 @@ class PancakeSwapScheduler extends Scheduler {
     }
 
     const [registeredStakeToken, registeredRewardToken] = await Promise.all([
-      this.getRegisteredToken(poolInfo.stakeToken.id, transaction),
-      this.getRegisteredToken(poolInfo.rewardToken.id, transaction),
+      getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.stakeToken.id }, transaction),
+      getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.rewardToken.id }, transaction),
     ]);
-    await this.registerPool(
+
+    await registerPool(
       {
+        protocol_id: PancakeSwap.protocol.id,
         type: PancakeSwap.constants.poolType.smartChef,
         name: `${registeredStakeToken.symbol}/${registeredRewardToken.symbol}`,
         address: poolInfo.address,
@@ -298,7 +215,7 @@ class PancakeSwapScheduler extends Scheduler {
     );
   }
 
-  async masterChefPools() {
+  async updateMasterChefPools() {
     try {
       const { totalAllocPoint, totalPoolLength, totalRewardPriceInOneYear } = await this.getMasterChefState();
 
@@ -312,7 +229,8 @@ class PancakeSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async (pid) => {
-              const pool = await this.getRegisteredMasterChefPool(pid);
+              const pool = await getRegisteredPool({ protocol_id: PancakeSwap.protocol.id, pid }, transaction);
+
               const { 0: lpToken, 1: allocPoint } = await PancakeSwap.getPoolInfo(pid);
               const allocPointNumber = allocPoint.toNumber();
               if (isNull(pool)) {
@@ -320,13 +238,16 @@ class PancakeSwapScheduler extends Scheduler {
                 await this.initMasterChefPool({ pid, lpToken, allocPoint: allocPointNumber }, transaction);
               } else {
                 if (isZero(allocPointNumber)) {
-                  await this.deactivateMasterChefPool(pid, transaction);
+                  await deactivatePool({ protocol_id: PancakeSwap.protocol.id, pid }, transaction);
                   return;
                 }
               }
 
-              const { stakeToken: targetToken } = await this.getRegisteredMasterChefPool(pid, transaction);
-              /* 풀의 총 공급량 */
+              const { stakeToken: targetToken } = await getRegisteredPool(
+                { protocol_id: PancakeSwap.protocol.id, pid },
+                transaction,
+              );
+              // 풀의 총 공급량
               const poolLiquidityAmount = divideDecimals(
                 (
                   await getTokenBalance(
@@ -341,10 +262,12 @@ class PancakeSwapScheduler extends Scheduler {
               // 풀의 총 유동량(USD)
               const poolLiquidityValue = isNull(targetToken.price_usd)
                 ? null
+                : isNull(targetToken.price_usd)
+                ? null
                 : toFixed(mul(poolLiquidityAmount, targetToken.price_usd));
               // 풀의 총 점유율
               const poolSharePointOfTotal = div(allocPoint, totalAllocPoint);
-              if (poolSharePointOfTotal.isZero()) return;
+              if (isZero(poolSharePointOfTotal)) return;
               // 풀의 총 리워드 일년 할당량(USD)
               const poolShareRewardValueOfTotalInOneYear = mul(totalRewardPriceInOneYear, poolSharePointOfTotal);
               // 풀의 APR
@@ -352,8 +275,11 @@ class PancakeSwapScheduler extends Scheduler {
                 ? null
                 : mul(div(poolShareRewardValueOfTotalInOneYear, poolLiquidityValue), 100);
 
-              await this.updateMasterChefPool(
-                pid,
+              await updatePool(
+                {
+                  protocol_id: PancakeSwap.protocol.id,
+                  pid,
+                },
                 {
                   liquidity_amount: poolLiquidityAmount.toString(),
                   liquidity_usd: isNull(poolLiquidityValue) ? null : poolLiquidityValue.toString(),
@@ -377,10 +303,10 @@ class PancakeSwapScheduler extends Scheduler {
     }
   }
 
-  async smartChefPools() {
+  async updateSmartChefPools() {
     try {
       const smartChefs = await PancakeSwap.getSmartChefsInfo();
-      const chunks = toSplitWithReturnSize(smartChefs, 10);
+      const chunks = toSplitWithReturnSize(smartChefs, 50);
 
       for (let i = 0; i < chunks.length; i += 1) {
         const transaction = await sequelize.transaction();
@@ -388,12 +314,11 @@ class PancakeSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async ({ id, stakeToken, earnToken, reward, endBlock }) => {
-              // console.log(id);
-              const pool = await this.getRegisteredSmartChefPool(id);
+              const pool = await getRegisteredPool({ protocol_id: PancakeSwap.protocol.id, address: id }, transaction);
               const curBlockNumber = await PancakeSwap.getBlockNumber();
 
               if (!isNull(pool) && isGreaterThanOrEqual(curBlockNumber, endBlock)) {
-                await this.deactivateSmartChefPool(id, transaction);
+                await deactivatePool({ protocol_id: PancakeSwap.protocol.id, address: id }, transaction);
                 return;
               }
 
@@ -409,8 +334,10 @@ class PancakeSwapScheduler extends Scheduler {
                 );
               }
 
-              const { stakeToken: targetStakeToken, rewardToken: targetRewardToken } =
-                await this.getRegisteredSmartChefPool(id, transaction);
+              const { stakeToken: targetStakeToken, rewardToken: targetRewardToken } = await getRegisteredPool(
+                { protocol_id: PancakeSwap.protocol.id, address: id },
+                transaction,
+              );
 
               /* 풀 총 공급량 */
               const poolLiquidityAmount = divideDecimals(
@@ -420,6 +347,8 @@ class PancakeSwapScheduler extends Scheduler {
 
               /* 풀의 총 유동량(USD) */
               const poolLiquidityValue = isNull(targetStakeToken.price_usd)
+                ? null
+                : isNull(targetStakeToken.price_usd)
                 ? null
                 : toFixed(mul(poolLiquidityAmount, targetStakeToken.price_usd));
               // 블록 당 리워드 갯수
@@ -446,8 +375,11 @@ class PancakeSwapScheduler extends Scheduler {
                   ? null
                   : mul(div(totalRewardPriceInOneYear, poolLiquidityValue), 100);
 
-              await this.updateSmartChefPool(
-                id,
+              await updatePool(
+                {
+                  protocol_id: PancakeSwap.protocol.id,
+                  address: id,
+                },
                 {
                   liquidity_amount: poolLiquidityAmount.toString(),
                   liquidity_usd: isNull(poolLiquidityValue) ? null : poolLiquidityValue.toString(),
@@ -473,8 +405,17 @@ class PancakeSwapScheduler extends Scheduler {
   }
 
   async run() {
-    await Promise.all([this.masterChefPools(), this.smartChefPools()]);
+    try {
+      await Promise.all([this.updateMasterChefPools(), this.updateSmartChefPools()]);
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 }
+(async () => {
+  const pp = new PancakeSwapScheduler();
+  await pp.init();
+  await pp.run();
+})();
 
-export default new PancakeSwapScheduler();
+// export default new PancakeSwapScheduler();

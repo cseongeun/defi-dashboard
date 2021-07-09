@@ -1,15 +1,16 @@
 import { Contract, ethers } from 'ethers';
-import BlockSubgraph from '../../subgraph/block';
 import PancakeSwapV2Subgraph from '../../subgraph/pancakeSwapV2';
-import { ProtocolService, ContractService } from '../../service';
+import { ProtocolService, ContractService, TokenService } from '../../service';
 import { MASTER_CHEF_ADDRESS, CAKE_TOKEN_ADDRESS, SMART_CHEF_ADDRESS, POOL_TYPE, SMART_CHEF_ABI } from './constant';
 
 class PancakeSwap {
   name: string = 'PancakeSwap';
-  masterChef: Contract;
   protocol: any;
   network: any;
   provider: any;
+
+  masterChef: Contract;
+  cakeToken: any;
 
   constants: { [key: string]: any } = {
     cakeTokenAddress: CAKE_TOKEN_ADDRESS,
@@ -19,12 +20,14 @@ class PancakeSwap {
   };
 
   async init() {
-    const [protocol, masterChefAbi] = await Promise.all([
+    const [protocol, masterChefAbi, cakeToken] = await Promise.all([
       ProtocolService.findOne({ name: this.name }),
       ContractService.findOne({ address: this.constants.masterChefAddress }),
+      TokenService.findOne({ address: this.constants.cakeTokenAddress }),
     ]);
 
     this.protocol = protocol;
+    this.cakeToken = cakeToken;
     this.network = this.protocol.Network;
     this.provider = new ethers.providers.JsonRpcProvider(this.network.rpc_url);
     this.masterChef = new ethers.Contract(this.constants.masterChefAddress, masterChefAbi.data, this.provider);

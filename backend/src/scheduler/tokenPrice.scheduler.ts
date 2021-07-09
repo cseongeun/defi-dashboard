@@ -125,16 +125,18 @@ class TokenPriceScheduler extends Scheduler {
 
   async run() {
     try {
-      console.log('Run Token Price Scheduler');
       /*
       순차적으로 가격 업데이트 진행해야함. 
         - 단일 토큰 가격 업데이트 (체인링크)
         - 단일 토큰이 포함된 페어의 가격 업데이트 (유동성 풀)
         - 페어의 다른 단일 토큰 가격 업데이트 (체인링크 - 유동성 풀 가격으로 산출 된 값)
       */
-      await this.runSingleTokensHasPriceAddress();
-      await this.runMultiTokens();
-      await this.runSingleTokensNoPriceAddress();
+      // but,
+      await Promise.all([
+        this.runSingleTokensHasPriceAddress(),
+        this.runMultiTokens(),
+        this.runSingleTokensNoPriceAddress(),
+      ]);
     } catch (e) {
       throw new Error(e);
     }
