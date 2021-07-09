@@ -1,4 +1,5 @@
 import schedule from 'node-schedule';
+import { isNull } from './helper/type.helper';
 import SchedulerInstances from './scheduler';
 import { SchedulerService, SchedulerAttributes, STATUS } from './service';
 
@@ -15,6 +16,9 @@ class AppScheduler {
     this.schedulers = schedulers;
     this.schedulers.forEach((scheduler) => {
       const instance = SchedulerInstances.find((instance) => instance.name === scheduler.name);
+      if (isNull(instance)) {
+        console.log(`Not found scheduler instance ${scheduler.name}`);
+      }
       this.schedulerInstanceById.set(scheduler.id, instance);
     });
   }

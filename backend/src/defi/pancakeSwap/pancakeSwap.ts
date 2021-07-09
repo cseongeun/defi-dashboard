@@ -2,7 +2,7 @@ import { Contract, ethers } from 'ethers';
 import BlockSubgraph from '../../subgraph/block';
 import PancakeSwapV2Subgraph from '../../subgraph/pancakeSwapV2';
 import { ProtocolService, ContractService } from '../../service';
-import { MASTER_CHEF_ADDRESS, CAKE_TOKEN_ADDRESS, SMART_CHEF_ADDRESS, POOL_TYPE } from './constant';
+import { MASTER_CHEF_ADDRESS, CAKE_TOKEN_ADDRESS, SMART_CHEF_ADDRESS, POOL_TYPE, SMART_CHEF_ABI } from './constant';
 
 class PancakeSwap {
   name: string = 'PancakeSwap';
@@ -53,9 +53,13 @@ class PancakeSwap {
     return PancakeSwapV2Subgraph.getPair(address);
   }
 
-  async getSmartChefs() {
+  async getSmartChefsInfo() {
     const numOfSmartChefs = await PancakeSwapV2Subgraph.getNumOfSmartChefFactory(this.constants.smartChefAddress);
     return PancakeSwapV2Subgraph.getSmartChef(numOfSmartChefs);
+  }
+
+  async getSmartChefInstance(address: string) {
+    return new ethers.Contract(address, SMART_CHEF_ABI, this.provider);
   }
 }
 

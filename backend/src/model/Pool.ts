@@ -99,7 +99,7 @@ const Pool = sequelize.define<PoolInstance>(
   },
   {
     tableName: 'pool',
-    indexes: [{ fields: ['protocol_id', 'pid'], unique: true }],
+    indexes: [{ fields: ['protocol_id', 'pid', 'address'], unique: true }],
   },
 );
 

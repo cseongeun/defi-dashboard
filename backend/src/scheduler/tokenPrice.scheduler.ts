@@ -61,7 +61,7 @@ class TokenPriceScheduler extends Scheduler {
         if (isNull(price_address)) return;
         const targetProvider = this.providers.get(network_id);
         const priceInChainLink = await getPrice(targetProvider, price_address);
-        const priceUSD = toFixed(divideDecimals(priceInChainLink.toString(), price_decimals), 8);
+        const priceUSD = toFixed(divideDecimals(priceInChainLink.toString(), price_decimals));
         this.updateTokenPrice(id, priceUSD.toString());
       }),
     );
@@ -74,17 +74,24 @@ class TokenPriceScheduler extends Scheduler {
         const pair = await this.getMultiTokenComposedOfTarget(id);
         if (isNull(pair)) return;
 
-        const targetProvider = this.providers.get(network_id);
+        const anotherToken = pair.pair0.id === id ? pair.pair1 : pair.pair0;
 
-        const totalSupplyOfPair = divideDecimals(
-          (await getTokenTotalSupply(targetProvider, pair.address)).toString(),
-          pair.decimals,
-        );
+        const targetProvider = this.providers.get(network_id);
 
         const targetTokenBalanceInPair = divideDecimals(
           (await getTokenBalance(targetProvider, address, pair.address)).toString(),
           decimals,
         );
+
+        const anotherTokenBalanceInPair = divideDecimals(
+          (await getTokenBalance(targetProvider, anotherToken.address, pair.address)).toString(),
+          anotherToken.decimals,
+        );
+
+        const anotherTokenValueInPair = mul(anotherTokenBalanceInPair, anotherToken.price_usd);
+        const targetTokenPriceUSD = toFixed(div(anotherTokenValueInPair, targetTokenBalanceInPair));
+
+        this.updateTokenPrice(id, targetTokenPriceUSD.toString());
       }),
     );
   }
@@ -94,7 +101,6 @@ class TokenPriceScheduler extends Scheduler {
     return Promise.all(
       multiTokens.map(async ({ id, network_id, address, decimals, pair0, pair1 }) => {
         if (isNull(pair0) || isNull(pair1)) return;
-        console.log(id);
 
         const targetProvider = this.providers.get(network_id);
 
@@ -102,6 +108,7 @@ class TokenPriceScheduler extends Scheduler {
         const targetPair = !isNull(pair0Price) ? pair0 : !isNull(pair1Price) ? pair1 : null;
         if (isNull(targetPair)) return;
 
+        // "https://dailydefi.org/articles/lp-token-value-calculation/"
         // multi token price = (price of pair x * balance of pair x) * 2 / totalSupply
         const totalSupply = divideDecimals((await getTokenTotalSupply(targetProvider, address)).toString(), decimals);
         const targetPairBalance = divideDecimals(
@@ -110,8 +117,7 @@ class TokenPriceScheduler extends Scheduler {
         );
         const targetPairTotalPriceUSD = mul(targetPair.price_usd, targetPairBalance);
         const totalPriceUSD = mul(targetPairTotalPriceUSD, 2);
-        const perPriceUSD = toFixed(div(totalPriceUSD, totalSupply), 6);
-        console.log(perPriceUSD.toString());
+        const perPriceUSD = toFixed(div(totalPriceUSD, totalSupply));
         this.updateTokenPrice(id, perPriceUSD.toString());
       }),
     );
@@ -120,7 +126,15 @@ class TokenPriceScheduler extends Scheduler {
   async run() {
     try {
       console.log('Run Token Price Scheduler');
-      return Promise.all([this.runSingleTokensHasPriceAddress(), this.runMultiTokens()]);
+      /*
+      순차적으로 가격 업데이트 진행해야함. 
+        - 단일 토큰 가격 업데이트 (체인링크)
+        - 단일 토큰이 포함된 페어의 가격 업데이트 (유동성 풀)
+        - 페어의 다른 단일 토큰 가격 업데이트 (체인링크 - 유동성 풀 가격으로 산출 된 값)
+      */
+      await this.runSingleTokensHasPriceAddress();
+      await this.runMultiTokens();
+      await this.runSingleTokensNoPriceAddress();
     } catch (e) {
       throw new Error(e);
     }

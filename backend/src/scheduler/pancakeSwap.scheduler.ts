@@ -4,9 +4,9 @@ import { PancakeSwap } from '../defi/pancakeSwap';
 import { TokenService, PoolService, TokenType, STATUS } from '../service';
 import { isNull } from '../helper/type.helper';
 import { fillSequenceNumber, toSplitWithReturnSize } from '../helper/array.helper';
-import { getTokenBalance, getTokenDecimals, getTokenName, getTokenProperty } from '../helper/erc20.helper';
-import { isZero, toFixed, div, mul, isGreaterThan, isGreaterThanOrEqual } from '../helper/bignumber.helper';
-import { zero, oneDaySeconds, oneYearDays } from '../helper/constant.helper';
+import { getTokenBalance, getTokenName, getTokenProperty } from '../helper/erc20.helper';
+import { isZero, toFixed, div, mul, isGreaterThanOrEqual } from '../helper/bignumber.helper';
+import { oneDaySeconds, oneYearDays } from '../helper/constant.helper';
 import { divideDecimals } from '../helper/decimals.helper';
 
 class PancakeSwapScheduler extends Scheduler {
@@ -161,7 +161,6 @@ class PancakeSwapScheduler extends Scheduler {
     if (isNull(tokenPair)) {
       /* Check V1 Pair pass */
       const lpTokenName = await getTokenName(PancakeSwap.provider, poolInfo.lpToken);
-      if (lpTokenName === 'Pancake LPs') return;
 
       if (isNull(registeredToken)) {
         await this.registerToken(
@@ -251,11 +250,13 @@ class PancakeSwapScheduler extends Scheduler {
     },
     transaction: any = null,
   ) {
-    console.log(poolInfo);
-    const [findStakeToken, findRewardToken] = await Promise.all([
+    const [findStakeToken, findRewardToken, stakeTokenPair, rewardTokenPair] = await Promise.all([
       this.getRegisteredToken(poolInfo.stakeToken.id, transaction),
       this.getRegisteredToken(poolInfo.rewardToken.id, transaction),
+      PancakeSwap.getPair(poolInfo.stakeToken.id),
+      PancakeSwap.getPair(poolInfo.rewardToken.id),
     ]);
+
     if (isNull(findStakeToken)) {
       await this.registerToken(
         {
@@ -280,13 +281,11 @@ class PancakeSwapScheduler extends Scheduler {
         transaction,
       );
     }
-    console.log('here');
 
     const [registeredStakeToken, registeredRewardToken] = await Promise.all([
       this.getRegisteredToken(poolInfo.stakeToken.id, transaction),
       this.getRegisteredToken(poolInfo.rewardToken.id, transaction),
     ]);
-    console.log(registeredStakeToken, 'registeredStakeToken');
     await this.registerPool(
       {
         type: PancakeSwap.constants.poolType.smartChef,
@@ -380,7 +379,7 @@ class PancakeSwapScheduler extends Scheduler {
 
   async smartChefPools() {
     try {
-      const smartChefs = await PancakeSwap.getSmartChefs();
+      const smartChefs = await PancakeSwap.getSmartChefsInfo();
       const chunks = toSplitWithReturnSize(smartChefs, 10);
 
       for (let i = 0; i < chunks.length; i += 1) {
@@ -389,11 +388,12 @@ class PancakeSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async ({ id, stakeToken, earnToken, reward, endBlock }) => {
+              // console.log(id);
               const pool = await this.getRegisteredSmartChefPool(id);
               const curBlockNumber = await PancakeSwap.getBlockNumber();
 
               if (!isNull(pool) && isGreaterThanOrEqual(curBlockNumber, endBlock)) {
-                await this.deactivateMasterChefPool(id, transaction);
+                await this.deactivateSmartChefPool(id, transaction);
                 return;
               }
 
@@ -466,7 +466,6 @@ class PancakeSwapScheduler extends Scheduler {
           await transaction.rollback();
           throw new Error(e);
         }
-        // }
       }
     } catch (e) {
       throw new Error(e);
@@ -474,14 +473,8 @@ class PancakeSwapScheduler extends Scheduler {
   }
 
   async run() {
-    await Promise.all([this.smartChefPools()]);
+    await Promise.all([this.masterChefPools(), this.smartChefPools()]);
   }
 }
 
-(async () => {
-  const pancakeSwap = new PancakeSwapScheduler();
-  await pancakeSwap.init();
-  await pancakeSwap.run();
-})();
-
-// export default new PancakeSwapScheduler();
+export default new PancakeSwapScheduler();
