@@ -1,20 +1,20 @@
 import Scheduler from './scheduler';
 import { sequelize } from '../model';
 import { PancakeSwap } from '../defi/pancakeSwap';
-import { TokenService, PoolService, TokenType, STATUS } from '../service';
+import { STATUS } from '../service';
 import { isNull } from '../helper/type.helper';
 import {
   getRegisteredPool,
   getRegisteredToken,
   updatePool,
-  updateToken,
   registerPool,
-  registerToken,
   deactivatePool,
+  tokenInit,
+  calculateApr,
 } from './common';
 import { fillSequenceNumber, toSplitWithReturnSize } from '../helper/array.helper';
-import { getTokenBalance, getTokenName, getTokenProperty } from '../helper/erc20.helper';
-import { isZero, toFixed, div, mul, isGreaterThanOrEqual } from '../helper/bignumber.helper';
+import { getTokenBalance, getTokenProperty } from '../helper/erc20.helper';
+import { isZero, div, mul, isGreaterThanOrEqual } from '../helper/bignumber.helper';
 import { oneDaySeconds, oneYearDays } from '../helper/constant.helper';
 import { divideDecimals } from '../helper/decimals.helper';
 
@@ -36,12 +36,8 @@ class PancakeSwapScheduler extends Scheduler {
     const rewardsInOneBlock = divideDecimals(rewardPerBlock.toString(), PancakeSwap.cakeToken.decimals);
     // 하루 총 생성 블록 갯수
     const blocksInOneDay = div(oneDaySeconds, PancakeSwap.network.block_time_sec);
-    // 일년 총 생성 블록 갯수
-    const blocksInOneYear = mul(blocksInOneDay, oneYearDays);
     // 하루 총 리워드 갯수
     const totalRewardInOneDay = mul(rewardsInOneBlock, blocksInOneDay);
-    // 일년 총 리워드 갯수
-    const totalRewardInOneYear = mul(totalRewardInOneDay, oneYearDays);
     // 하루 총 리워드 USD 가격
     const totalRewardPriceInOneDay = mul(totalRewardInOneDay, PancakeSwap.cakeToken.price_usd);
     // 일년 총 리워드 USD 가격
@@ -50,98 +46,28 @@ class PancakeSwapScheduler extends Scheduler {
     return {
       totalAllocPoint,
       totalPoolLength,
-      totalRewardInOneYear,
       totalRewardPriceInOneYear,
     };
   }
 
   async initMasterChefPool(poolInfo: { pid: number; lpToken: string; allocPoint: number }, transaction: any = null) {
     const tokenPair = await PancakeSwap.getPair(poolInfo.lpToken);
-    const registeredToken = await getRegisteredToken(
-      { network_id: PancakeSwap.network.id, address: poolInfo.lpToken },
+    const { name, symbol, decimals } = await getTokenProperty(PancakeSwap.provider, poolInfo.lpToken);
+
+    // 토큰 상태 확인 및 초기화
+    await tokenInit(
+      { network_id: PancakeSwap.network.id, address: poolInfo.lpToken, name, symbol, decimals },
+      tokenPair,
       transaction,
     );
 
-    const { name, symbol, decimals } = await getTokenProperty(PancakeSwap.provider, poolInfo.lpToken);
-
-    /* Multi 타입이 아닐 경우 */
-    if (isNull(tokenPair)) {
-      /* Check V1 Pair pass */
-      if (isNull(registeredToken)) {
-        await registerToken(
-          {
-            network_id: PancakeSwap.network.id,
-            type: TokenType.SINGLE,
-            name,
-            symbol,
-            decimals,
-            address: poolInfo.lpToken,
-          },
-          transaction,
-        );
-      }
-    } else {
-      const {
-        token0: { id: token0Address, name: token0Name, symbol: token0Symbol, decimals: token0Decimals },
-        token1: { id: token1Address, name: token1Name, symbol: token1Symbol, decimals: token1Decimals },
-      } = tokenPair;
-
-      const [registeredToken0, registeredToken1] = await Promise.all([
-        getRegisteredToken({ network_id: PancakeSwap.network.id, address: token0Address }, transaction),
-        getRegisteredToken({ network_id: PancakeSwap.network.id, address: token1Address }, transaction),
-      ]);
-
-      if (isNull(registeredToken0)) {
-        await registerToken(
-          {
-            network_id: PancakeSwap.network.id,
-            type: TokenType.SINGLE,
-            address: token0Address,
-            name: token0Name,
-            symbol: token0Symbol,
-            decimals: token0Decimals,
-          },
-          transaction,
-        );
-      }
-      if (isNull(registeredToken1)) {
-        await registerToken(
-          {
-            network_id: PancakeSwap.network.id,
-            type: TokenType.SINGLE,
-            address: token1Address,
-            name: token1Name,
-            symbol: token1Symbol,
-            decimals: token1Decimals,
-          },
-          transaction,
-        );
-      }
-      if (isNull(registeredToken)) {
-        const [pairOfToken0, pairOfToken1] = await Promise.all([
-          getRegisteredToken({ network_id: PancakeSwap.network.id, address: token0Address }, transaction),
-          getRegisteredToken({ network_id: PancakeSwap.network.id, address: token1Address }, transaction),
-        ]);
-        await registerToken(
-          {
-            network_id: PancakeSwap.network.id,
-            type: TokenType.MULTI,
-            address: poolInfo.lpToken,
-            name,
-            symbol: `${pairOfToken0.symbol}-${pairOfToken1.symbol}`,
-            decimals,
-            pair0_token_id: pairOfToken0.id,
-            pair1_token_id: pairOfToken1.id,
-          },
-          transaction,
-        );
-      }
-    }
-    /* 풀 추가 */
+    // 등록된 스테이크 토큰
     const stakeToken = await getRegisteredToken(
       { network_id: PancakeSwap.network.id, address: poolInfo.lpToken },
       transaction,
     );
+
+    // 풀 추가
     await registerPool(
       {
         protocol_id: PancakeSwap.protocol.id,
@@ -163,45 +89,44 @@ class PancakeSwapScheduler extends Scheduler {
     },
     transaction: any = null,
   ) {
-    const [findStakeToken, findRewardToken, stakeTokenPair, rewardTokenPair] = await Promise.all([
-      getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.stakeToken.id }, transaction),
-      getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.rewardToken.id }, transaction),
+    const [stakeTokenPair, rewardTokenPair] = await Promise.all([
       PancakeSwap.getPair(poolInfo.stakeToken.id),
       PancakeSwap.getPair(poolInfo.rewardToken.id),
     ]);
 
-    if (isNull(findStakeToken)) {
-      await registerToken(
-        {
-          network_id: PancakeSwap.network.id,
-          type: TokenType.SINGLE,
-          name: poolInfo.stakeToken.name,
-          symbol: poolInfo.stakeToken.symbol,
-          decimals: Number(poolInfo.stakeToken.decimals),
-          address: poolInfo.stakeToken.id,
-        },
-        transaction,
-      );
-    }
-    if (isNull(findRewardToken)) {
-      await registerToken(
-        {
-          network_id: PancakeSwap.network.id,
-          type: TokenType.SINGLE,
-          name: poolInfo.rewardToken.name,
-          symbol: poolInfo.rewardToken.symbol,
-          decimals: Number(poolInfo.rewardToken.decimals),
-          address: poolInfo.rewardToken.id,
-        },
-        transaction,
-      );
-    }
+    // 스테이크 토큰 상태 확인 및 초기화
+    await tokenInit(
+      {
+        network_id: PancakeSwap.network.id,
+        address: poolInfo.stakeToken.id,
+        name: poolInfo.stakeToken.name,
+        symbol: poolInfo.stakeToken.symbol,
+        decimals: Number(poolInfo.stakeToken.decimals),
+      },
+      stakeTokenPair,
+      transaction,
+    );
 
+    // 리워드 토큰 상태 확인 및 초기화
+    await tokenInit(
+      {
+        network_id: PancakeSwap.network.id,
+        address: poolInfo.rewardToken.id,
+        name: poolInfo.rewardToken.name,
+        symbol: poolInfo.rewardToken.symbol,
+        decimals: Number(poolInfo.rewardToken.decimals),
+      },
+      rewardTokenPair,
+      transaction,
+    );
+
+    // 등록된 스테이크, 리워드 토큰
     const [registeredStakeToken, registeredRewardToken] = await Promise.all([
       getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.stakeToken.id }, transaction),
       getRegisteredToken({ network_id: PancakeSwap.network.id, address: poolInfo.rewardToken.id }, transaction),
     ]);
 
+    // 풀 추가
     await registerPool(
       {
         protocol_id: PancakeSwap.protocol.id,
@@ -229,6 +154,8 @@ class PancakeSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async (pid) => {
+              console.log('masterChef', pid);
+
               const pool = await getRegisteredPool({ protocol_id: PancakeSwap.protocol.id, pid }, transaction);
 
               const { 0: lpToken, 1: allocPoint } = await PancakeSwap.getPoolInfo(pid);
@@ -258,22 +185,20 @@ class PancakeSwapScheduler extends Scheduler {
                 ).toString(),
                 targetToken.decimals,
               );
-
               // 풀의 총 유동량(USD)
               const poolLiquidityValue = isNull(targetToken.price_usd)
                 ? null
                 : isNull(targetToken.price_usd)
                 ? null
-                : toFixed(mul(poolLiquidityAmount, targetToken.price_usd));
+                : mul(poolLiquidityAmount, targetToken.price_usd);
+
               // 풀의 총 점유율
               const poolSharePointOfTotal = div(allocPoint, totalAllocPoint);
               if (isZero(poolSharePointOfTotal)) return;
               // 풀의 총 리워드 일년 할당량(USD)
               const poolShareRewardValueOfTotalInOneYear = mul(totalRewardPriceInOneYear, poolSharePointOfTotal);
               // 풀의 APR
-              const poolApr = isNull(poolLiquidityValue)
-                ? null
-                : mul(div(poolShareRewardValueOfTotalInOneYear, poolLiquidityValue), 100);
+              const poolApr = calculateApr(poolLiquidityValue, poolShareRewardValueOfTotalInOneYear);
 
               await updatePool(
                 {
@@ -314,6 +239,7 @@ class PancakeSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async ({ id, stakeToken, earnToken, reward, endBlock }) => {
+              console.log('smartChef', id);
               const pool = await getRegisteredPool({ protocol_id: PancakeSwap.protocol.id, address: id }, transaction);
               const curBlockNumber = await PancakeSwap.getBlockNumber();
 
@@ -339,28 +265,23 @@ class PancakeSwapScheduler extends Scheduler {
                 transaction,
               );
 
-              /* 풀 총 공급량 */
+              // 풀 총 공급량
               const poolLiquidityAmount = divideDecimals(
                 (await getTokenBalance(PancakeSwap.provider, targetStakeToken.address, id)).toString(),
                 targetStakeToken.decimals,
               );
-
-              /* 풀의 총 유동량(USD) */
+              // 풀의 총 유동량(USD)
               const poolLiquidityValue = isNull(targetStakeToken.price_usd)
                 ? null
                 : isNull(targetStakeToken.price_usd)
                 ? null
-                : toFixed(mul(poolLiquidityAmount, targetStakeToken.price_usd));
+                : mul(poolLiquidityAmount, targetStakeToken.price_usd);
               // 블록 당 리워드 갯수
               const rewardsInOneBlock = reward;
               // 하루 총 생성 블록 갯수
               const blocksInOneDay = div(oneDaySeconds, PancakeSwap.network.block_time_sec);
-              // 일년 총 생성 블록 갯수
-              const blocksInOneYear = mul(blocksInOneDay, oneYearDays);
               // 하루 총 리워드 갯수
               const totalRewardInOneDay = mul(rewardsInOneBlock, blocksInOneDay);
-              // 일년 총 리워드 갯수
-              const totalRewardInOneYear = mul(totalRewardInOneDay, oneYearDays);
               // 하루 총 리워드 USD 가격
               const totalRewardPriceInOneDay = isNull(targetRewardToken.price_usd)
                 ? null
@@ -370,10 +291,7 @@ class PancakeSwapScheduler extends Scheduler {
                 ? null
                 : mul(totalRewardPriceInOneDay, oneYearDays);
 
-              const poolApr =
-                isNull(poolLiquidityValue) || isNull(totalRewardPriceInOneYear)
-                  ? null
-                  : mul(div(totalRewardPriceInOneYear, poolLiquidityValue), 100);
+              const poolApr = calculateApr(poolLiquidityValue, totalRewardPriceInOneYear);
 
               await updatePool(
                 {
@@ -394,12 +312,12 @@ class PancakeSwapScheduler extends Scheduler {
 
           await transaction.commit();
         } catch (e) {
-          console.log(e);
           await transaction.rollback();
           throw new Error(e);
         }
       }
     } catch (e) {
+      console.log(e);
       throw new Error(e);
     }
   }

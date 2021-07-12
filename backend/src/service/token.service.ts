@@ -55,6 +55,6 @@ class TokenService extends Service {
   }
 }
 
-export { TokenType, TokenAssociations, TokenExtendsAttributes };
+export { TokenAssociations, TokenExtendsAttributes };
 
 export default new TokenService();
