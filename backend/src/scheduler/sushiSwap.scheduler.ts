@@ -171,8 +171,4 @@ class SushiSwapScheduler extends Scheduler {
   }
 }
 
-(async () => {
-  const sushi = new SushiSwapScheduler();
-  await sushi.init();
-  await sushi.run();
-})();
+export default new SushiSwapScheduler();

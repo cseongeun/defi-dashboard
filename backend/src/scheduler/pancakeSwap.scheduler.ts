@@ -239,7 +239,6 @@ class PancakeSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async ({ id, stakeToken, earnToken, reward, endBlock }) => {
-              console.log('smartChef', id);
               const pool = await getRegisteredPool({ protocol_id: PancakeSwap.protocol.id, address: id }, transaction);
               const curBlockNumber = await PancakeSwap.getBlockNumber();
 
@@ -330,10 +329,5 @@ class PancakeSwapScheduler extends Scheduler {
     }
   }
 }
-(async () => {
-  const pp = new PancakeSwapScheduler();
-  await pp.init();
-  await pp.run();
-})();
 
-// export default new PancakeSwapScheduler();
+export default new PancakeSwapScheduler();
