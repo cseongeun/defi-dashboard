@@ -3,11 +3,6 @@ export interface IStatus {
   DEACTIVATE: string;
 }
 
-export const STATUS: IStatus = {
-  ACTIVATE: 'ACTIVATE',
-  DEACTIVATE: 'DEACTIVATE',
-};
-
 export interface ITime {
   createdAt?: Date;
   updatedAt?: Date;
@@ -18,7 +13,7 @@ export interface ITokenType {
   MULTI: string;
 }
 
-export const TokenType: ITokenType = {
-  SINGLE: 'SINGLE',
-  MULTI: 'MULTI',
-};
+export interface IRPCType {
+  OCTET: string;
+  PUBLIC: string;
+}

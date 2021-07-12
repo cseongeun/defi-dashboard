@@ -1,12 +1,7 @@
 import schedule from 'node-schedule';
 import { isNull } from './helper/type.helper';
-import SchedulerInstances from './scheduler';
+import { SchedulerInstances } from './scheduler';
 import { SchedulerService, SchedulerAttributes, STATUS } from './service';
-
-const COMMON_ERROR_REASON_CHECKER = (err: string) => {
-  const reasons = ['missing response'];
-  return reasons.includes(err);
-};
 
 class AppScheduler {
   schedulers: SchedulerAttributes[];
@@ -48,13 +43,14 @@ class AppScheduler {
       const status = await this.checkStatus(id);
       if (status) {
         const targetSchedulerInstance = this.schedulerInstanceById.get(id);
-        await targetSchedulerInstance.run();
-        await this.updateScheduler(id, false, null, STATUS.ACTIVATE);
+        if (!targetSchedulerInstance.working) {
+          await targetSchedulerInstance.run();
+          await this.updateScheduler(id, false, null, STATUS.ACTIVATE);
+        }
       }
     } catch (e) {
-      if (!COMMON_ERROR_REASON_CHECKER(e.reason)) {
-        await this.updateScheduler(id, true, JSON.stringify(e.reason), STATUS.DEACTIVATE);
-      }
+      await this.updateScheduler(id, true, JSON.stringify(e), STATUS.DEACTIVATE);
+      throw new Error(e);
     }
   }
 
@@ -64,8 +60,8 @@ class AppScheduler {
         await this.initInstance(scheduler.id);
         await this.updateScheduler(scheduler.id, false, null, STATUS.ACTIVATE);
         console.log(`${scheduler.name} scheduler start`);
-        schedule.scheduleJob(scheduler.cron, () => {
-          this.execute(scheduler.id);
+        schedule.scheduleJob(scheduler.cron, async () => {
+          await this.execute(scheduler.id);
         });
       }),
     );

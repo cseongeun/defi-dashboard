@@ -20,6 +20,7 @@ import { divideDecimals } from '../helper/decimals.helper';
 
 class PancakeSwapScheduler extends Scheduler {
   name: string = 'PancakeSwapScheduler';
+  working: boolean = false;
 
   async init() {
     await PancakeSwap.init();
@@ -154,8 +155,6 @@ class PancakeSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async (pid) => {
-              console.log('masterChef', pid);
-
               const pool = await getRegisteredPool({ protocol_id: PancakeSwap.protocol.id, pid }, transaction);
 
               const { 0: lpToken, 1: allocPoint } = await PancakeSwap.getPoolInfo(pid);
@@ -316,16 +315,18 @@ class PancakeSwapScheduler extends Scheduler {
         }
       }
     } catch (e) {
-      console.log(e);
       throw new Error(e);
     }
   }
 
   async run() {
     try {
+      this.working = true;
       await Promise.all([this.updateMasterChefPools(), this.updateSmartChefPools()]);
+      this.working = false;
     } catch (e) {
-      throw new Error(e);
+      console.log(e);
+      this.handleError(e);
     }
   }
 }

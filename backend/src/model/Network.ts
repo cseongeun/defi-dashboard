@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/providers';
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '.';
-import { IStatus, STATUS } from './common/interface';
+import { IStatus, RPCType, STATUS } from './common/interface';
 
 interface NetworkAttributes {
   id: number;
@@ -9,6 +9,7 @@ interface NetworkAttributes {
   sub_name: string;
   symbol: string;
   chain_id: number;
+  rpc_type: string;
   rpc_url: string;
   block_time_sec?: number;
   explorer_url?: string;
@@ -54,6 +55,12 @@ const Network = sequelize.define<NetworkInstance>(
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
     },
+    rpc_type: {
+      type: DataTypes.ENUM(),
+      values: Object.keys(RPCType),
+      
+
+    }
     rpc_url: {
       type: DataTypes.STRING(1000),
       allowNull: false,

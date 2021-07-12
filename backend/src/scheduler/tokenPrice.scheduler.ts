@@ -11,6 +11,7 @@ import { Op } from 'sequelize';
 
 class TokenPriceScheduler extends Scheduler {
   name: string = 'TokenPriceScheduler';
+  working: boolean = false;
 
   networks: NetworkAttributes[];
   providers = new Map<number, Provider>();
@@ -132,13 +133,15 @@ class TokenPriceScheduler extends Scheduler {
         - 페어의 다른 단일 토큰 가격 업데이트 (체인링크 - 유동성 풀 가격으로 산출 된 값)
       */
       // but,
+      this.working = true;
       await Promise.all([
         this.runSingleTokensHasPriceAddress(),
         this.runMultiTokens(),
         this.runSingleTokensNoPriceAddress(),
       ]);
+      this.working = false;
     } catch (e) {
-      throw new Error(e);
+      this.handleError(e);
     }
   }
 }

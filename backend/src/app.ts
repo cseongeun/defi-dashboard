@@ -1,5 +1,6 @@
 import express from 'express';
 import { Controllers } from './controller';
+import { DeFiInstances } from './defi';
 
 class App {
   port: number;
@@ -16,10 +17,22 @@ class App {
       .on('error', (err) => console.error(err));
   }
 
+  async initDeFi() {
+    DeFiInstances.forEach(async (defi) => {
+      try {
+        await defi.init();
+        console.log(`${defi.name} instance initialize success`);
+      } catch (e) {
+        console.log(`${defi.name} instance initialize failed`);
+        throw Error(e);
+      }
+    });
+  }
+
   initController() {
     Controllers.forEach((controller) => {
       try {
-        console.log(`${controller.path} controller initialized`);
+        console.log(`${controller.path} controller initialize success`);
         this.application.use('/', controller.router);
       } catch (e) {
         console.log(`${controller.path} controller initialize failed`);
@@ -32,6 +45,8 @@ class App {
 (async () => {
   const app = new App();
 
+  app.initDeFi();
   app.initController();
+
   app.run();
 })();

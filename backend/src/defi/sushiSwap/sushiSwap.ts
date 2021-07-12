@@ -1,9 +1,10 @@
 import { Contract, ethers } from 'ethers';
+import DeFi from '../DeFi';
 import { ContractService, ProtocolService, TokenService } from '../../service';
 import { MASTER_CHEF_ADDRESS, SUSHI_TOKEN_ADDRESS, POOL_TYPE } from './constant';
 import SushiSwapSubgraph from '../../subgraph/sushiSwap';
-
-class SushiSwap {
+import config from '../../config';
+class SushiSwap extends DeFi {
   name: string = 'SushiSwap';
   protocol: any;
   network: any;
@@ -28,7 +29,12 @@ class SushiSwap {
     this.protocol = protocol;
     this.sushiToken = sushiToken;
     this.network = this.protocol.Network;
-    this.provider = new ethers.providers.JsonRpcProvider(this.network.rpc_url);
+    this.provider = new ethers.providers.JsonRpcProvider({
+      url: this.network.rpc_url,
+      headers: {
+        Authorization: `Bearer ${config.OCTET_EXPLORER_API_TOKEN}`,
+      },
+    });
     this.masterChef = new ethers.Contract(this.constants.masterChefAddress, masterChefAbi.data, this.provider);
   }
 

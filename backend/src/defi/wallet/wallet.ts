@@ -1,16 +1,17 @@
 import { ethers } from 'ethers';
-import { TokenService, NetworkService, NetworkExtendsAttributes, TokenExtendsAttributes } from '../../service';
+import DeFi from '../DeFi';
+import { TokenService, NetworkService, NetworkExtendsAttributes, TokenExtendsAttributes, RPCType } from '../../service';
 import { findGreaterThanZeroBalance } from '../../helper/array.helper';
 import { getTokenBalance } from '../../helper/erc20.helper';
 import { zeroAddress } from '../../helper/constant.helper';
 
-class Wallet {
+class Wallet extends DeFi {
+  name: string = 'Wallet';
   networks = new Map<number, NetworkExtendsAttributes>();
   tokens = new Map<number, TokenExtendsAttributes>();
 
   async init() {
     const [networks, tokens] = await Promise.all([NetworkService.findAll(), TokenService.findAll()]);
-    console.log(tokens);
     tokens.forEach((token: TokenExtendsAttributes) => {
       this.tokens.set(token.id, token);
     });

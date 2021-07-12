@@ -20,6 +20,7 @@ import {
 
 class SushiSwapScheduler extends Scheduler {
   name: string = 'SushiSwapScheduler';
+  working: boolean = false;
 
   async init() {
     await SushiSwap.init();
@@ -31,6 +32,7 @@ class SushiSwapScheduler extends Scheduler {
       SushiSwap.getPoolLength(),
       SushiSwap.getSushiPerBlock(),
     ]);
+    console.log(totalAllocPoint, totalPoolLength, rewardPerBlock);
 
     // 블록 당 리워드 갯수
     const rewardsInOneBlock = divideDecimals(rewardPerBlock.toString(), SushiSwap.sushiToken.decimals);
@@ -95,6 +97,7 @@ class SushiSwapScheduler extends Scheduler {
         try {
           await Promise.all(
             chunks[i].map(async (pid) => {
+              console.log(pid);
               const pool = await getRegisteredPool({ protocol_id: SushiSwap.protocol.id, pid }, transaction);
 
               const { 0: lpToken, 1: allocPoint } = await SushiSwap.getPoolInfo(pid);
@@ -167,8 +170,19 @@ class SushiSwapScheduler extends Scheduler {
   }
 
   async run() {
-    await Promise.all([this.updateMasterChefPools()]);
+    try {
+      this.working = true;
+      await Promise.all([this.updateMasterChefPools()]);
+      this.working = false;
+    } catch (e) {
+      this.handleError(e);
+    }
   }
 }
 
-export default new SushiSwapScheduler();
+(async () => {
+  const sushiSwapScheduler = new SushiSwapScheduler();
+  await sushiSwapScheduler.init();
+  await sushiSwapScheduler.run();
+})();
+// export default new SushiSwapScheduler();

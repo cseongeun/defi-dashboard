@@ -110,7 +110,6 @@ export const tokenInit = async (
     transaction,
   );
 
-  console.log(pair);
   // LP 가 아닐 경우,
   if (isNull(pair)) {
     if (isNull(registeredToken)) {

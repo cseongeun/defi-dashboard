@@ -1,9 +1,10 @@
 import { Contract, ethers } from 'ethers';
+import DeFi from '../DeFi';
 import PancakeSwapV2Subgraph from '../../subgraph/pancakeSwapV2';
 import { ProtocolService, ContractService, TokenService } from '../../service';
 import { MASTER_CHEF_ADDRESS, CAKE_TOKEN_ADDRESS, SMART_CHEF_ADDRESS, POOL_TYPE, SMART_CHEF_ABI } from './constant';
 
-class PancakeSwap {
+class PancakeSwap extends DeFi {
   name: string = 'PancakeSwap';
   protocol: any;
   network: any;
