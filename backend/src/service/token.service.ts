@@ -1,18 +1,10 @@
 import Service from './service';
-import Token, { TokenAssociations, TokenExtendsAttributes } from '../models/Token';
-import { STATUS } from '../models/common/interface';
-import { TypeHelper } from '../helper';
-
-const NAME = 'TokenService';
+import Token, { TokenType, TokenAssociations, TokenExtendsAttributes } from '../model/Token';
+import { isNull } from '../helper/type.helper';
 
 class TokenService extends Service {
-  name = NAME;
-  
-  includeModels: any[];
-
-  async init() {
-    this.includeModels = TokenAssociations;
-  }
+  name = 'TokenService';
+  includeModels: string[] = TokenAssociations;
 
   async create(params: any, transaction: any = null) {
     return Token.create(params, { transaction });
@@ -32,40 +24,34 @@ class TokenService extends Service {
 
   async findAll(
     condition?: any,
-    options: { extend?: boolean; status?: string; transaction?: any } = {
-      extend: true,
-      status: STATUS.ACTIVATE,
+    options: { transaction?: any } = {
       transaction: null,
     },
   ) {
-    return Token.findAll({
-      where: { ...condition, status: options.status },
-      include: options.extend ? this.includeModels : null,
+    const result = await Token.findAll({
+      where: { ...condition },
+      include: this.includeModels,
       transaction: options.transaction,
-      raw: true,
-      nest: true,
     });
+    return JSON.parse(JSON.stringify(result));
   }
 
   async findOne(
     condition?: any,
-    options: { extend?: boolean; status?: string; transaction?: any } = {
-      extend: true,
-      status: STATUS.ACTIVATE,
+    options: { transaction?: any } = {
       transaction: null,
     },
   ) {
-    return Token.findOne({
-      where: { ...condition, status: options.status },
-      include: options.extend ? this.includeModels : null,
+    const result = await Token.findOne({
+      where: { ...condition },
+      include: this.includeModels,
       transaction: options.transaction,
-      raw: true,
-      nest: true,
     });
+    return JSON.parse(JSON.stringify(result));
   }
 
   async isExist(condition?: any) {
-    return !!TypeHelper.isNull(Token.findOne({ where: { ...condition } }));
+    return !!isNull(Token.findOne({ where: { ...condition } }));
   }
 }
 

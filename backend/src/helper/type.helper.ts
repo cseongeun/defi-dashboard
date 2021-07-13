@@ -1,9 +1,9 @@
 import _ from 'lodash';
 
-class TypeHelper {
-  isNull(value: any) {
+export const isNull = (value: any): boolean => {
+  try {
     return _.isNull(value);
+  } catch (e) {
+    return false;
   }
-}
-
-export default new TypeHelper();
+};

@@ -1,13 +1,9 @@
-import BigNumberHelper from './bignumber.helper';
+import { shift, toBigNumber } from './bignumber.helper';
 
-class DecimalsHelper {
-  multiplyDecimals(value: string | number, decimals: number) {
-    return BigNumberHelper.shift(value, decimals);
-  }
+export const multiplyDecimals = (value: string | number, decimals: number) => {
+  return shift(value, decimals);
+};
 
-  divideDecimals(value: string | number, decimals: number) {
-    return BigNumberHelper.shift(value, decimals * -1);
-  }
-}
-
-export default new DecimalsHelper();
+export const divideDecimals = (value: string | number, decimals: number) => {
+  return shift(value, decimals * -1);
+};

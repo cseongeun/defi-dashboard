@@ -1,18 +1,11 @@
-import Network, { NetworkAssociations, NetworkAttributes, NetworkExtendsAttributes } from '../models/Network';
-import { STATUS } from '../models/common/interface';
-import { TypeHelper } from '../helper';
+import Network, { NetworkAssociations, NetworkAttributes, NetworkExtendsAttributes } from '../model/Network';
+import { STATUS } from '../model/common/interface';
+import { isNull } from '../helper/type.helper';
 import Service from './service';
 
-const NAME = 'NetworkService';
-
 class NetworkService extends Service {
-  name = NAME;
-  
-  includeModels: any[];
-
-  init() {
-    this.includeModels = NetworkAssociations;
-  }
+  name = 'NetworkService';
+  includeModels: string[] = NetworkAssociations;
 
   async create(params: any, transaction: any = null) {
     return Network.create(params, { transaction });
@@ -20,40 +13,34 @@ class NetworkService extends Service {
 
   async findAll(
     condition?: any,
-    options: { extend?: boolean; status?: string; transaction?: any } = {
-      extend: true,
-      status: STATUS.ACTIVATE,
+    options: { transaction?: any } = {
       transaction: null,
     },
   ) {
-    return Network.findAll({
-      where: { ...condition, status: options.status },
-      include: options.extend ? this.includeModels : null,
+    const result = await Network.findAll({
+      where: { ...condition },
+      include: this.includeModels,
       transaction: options.transaction,
-      raw: true,
-      nest: true,
     });
+    return JSON.parse(JSON.stringify(result));
   }
 
   async findOne(
     condition?: any,
-    options: { extend?: boolean; status?: string; transaction?: any } = {
-      extend: true,
-      status: STATUS.ACTIVATE,
+    options: { transaction?: any } = {
       transaction: null,
     },
   ) {
-    return Network.findOne({
-      where: { ...condition, status: options.status },
-      include: options.extend ? this.includeModels : null,
+    const result = await Network.findOne({
+      where: { ...condition },
+      include: this.includeModels,
       transaction: options.transaction,
-      raw: true,
-      nest: true,
     });
+    return JSON.parse(JSON.stringify(result));
   }
 
   async isExist(condition: any) {
-    return !!TypeHelper.isNull(Network.findOne({ where: { ...condition } }));
+    return !!isNull(Network.findOne({ where: { ...condition } }));
   }
 }
 

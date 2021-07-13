@@ -1,6 +1,6 @@
 abstract class Service {
   abstract name: string;
-  abstract init();
+  abstract includeModels: string[];
 }
 
 export default Service;
